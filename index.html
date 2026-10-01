@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#5e68cc">
+  <meta name="theme-color" content="#7c3aed">
   <meta name="description" content="Калькулятор образца, изделия и подбора пряжи сообщества «Мания пряжи».">
   <title>Калькулятор пряжи — Мания пряжи</title>
-  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/styles.css?v=20261001-rebuild03">
+  <link rel="icon" href="assets/calculator-icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/calculator-icon.png">
+  <link rel="stylesheet" href="assets/styles.css?v=20261001-rebuild04">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -28,7 +29,10 @@
 
   <section class="consent-screen" id="consentScreen" aria-labelledby="consentTitle">
     <div class="consent-card">
-      <div class="consent-logo" aria-hidden="true"><svg><use href="#i-yarn"></use></svg></div>
+      <div class="consent-brand-row" aria-hidden="true">
+        <img class="consent-brand" src="assets/brand-logo.png" alt="">
+        <img class="consent-app-icon" src="assets/calculator-icon.png" alt="">
+      </div>
       <span class="eyebrow">Перед началом расчёта</span>
       <h1 id="consentTitle">Важно знать</h1>
       <p>Расчёты расхода пряжи и рекомендации основаны на ориентировочных данных и сведениях из открытых источников.</p>
@@ -44,11 +48,8 @@
 
   <div class="app-shell is-locked" id="app" aria-hidden="true">
     <header class="brand-header">
-      <div class="brand-mark" aria-hidden="true"><svg><use href="#i-yarn"></use></svg></div>
-      <div class="brand-copy">
-        <div class="brand-name">Мания <strong>ПРЯЖИ</strong></div>
-        <div class="brand-subtitle">Калькулятор пряжи</div>
-      </div>
+      <img class="brand-logo-img" src="assets/brand-logo.png" alt="Мания пряжи">
+      <div class="brand-copy"><div class="brand-subtitle">Калькулятор пряжи</div></div>
       <div class="vk-state" id="vkState" title="Состояние каталога VK"><span class="dot"></span><span>Каталог</span></div>
     </header>
 
@@ -66,11 +67,11 @@
             <h1>Калькулятор образца</h1>
             <p>Соберите рабочую нить, внесите измерения образца до и после ВТО и получите фактическую плотность.</p>
           </div>
-          <div class="hero-yarn" aria-hidden="true"><svg><use href="#i-yarn"></use></svg><svg class="spark"><use href="#i-spark"></use></svg></div>
+          <div class="hero-yarn" aria-hidden="true"><img class="hero-app-icon" src="assets/calculator-icon.png" alt=""></div>
         </div>
 
         <section class="step-card">
-          <div class="step-title"><span>1</span><div><h2>Рабочая нить</h2><p>Можно объединить до пяти разных видов пряжи. Для каждой укажите метраж, число нитей и состав.</p></div></div>
+          <div class="step-title"><span>1</span><div><h2>Рабочая нить</h2><p>Можно объединить до пяти разных видов пряжи. Для каждой укажите метраж, число нитей и до пяти компонентов состава.</p></div></div>
           <div class="yarn-components" id="yarnComponents"></div>
           <button class="ghost-btn add-yarn-btn" id="addYarnBtn" type="button">+ Добавить нить</button>
           <div class="mix-result" id="mixResult" aria-live="polite"></div>
@@ -80,25 +81,28 @@
           <div class="step-card">
             <div class="step-title"><span>2</span><div><h2>До ВТО</h2><p>Измерьте связанный образец до влажно-тепловой обработки.</p></div></div>
             <div class="field-grid two">
-              <label class="field"><span>Количество петель</span><input id="beforeStitches" type="number" min="1" step="1" value="30" inputmode="numeric"></label>
-              <label class="field"><span>Количество рядов</span><input id="beforeRows" type="number" min="1" step="1" value="40" inputmode="numeric"></label>
-              <label class="field"><span>Ширина</span><div class="input-unit"><input id="beforeWidth" type="number" min="0.1" step="0.1" value="14.2" inputmode="decimal"><b>см</b></div></label>
-              <label class="field"><span>Высота</span><div class="input-unit"><input id="beforeHeight" type="number" min="0.1" step="0.1" value="13.5" inputmode="decimal"><b>см</b></div></label>
-              <label class="field full"><span>Вес образца</span><div class="input-unit"><input id="sampleWeight" type="number" min="0.1" step="0.1" value="9.4" inputmode="decimal"><b>г</b></div></label>
+              <label class="field"><span>Количество петель</span><input id="beforeStitches" type="number" min="1" step="1" placeholder="—" inputmode="numeric"></label>
+              <label class="field"><span>Количество рядов</span><input id="beforeRows" type="number" min="1" step="1" placeholder="—" inputmode="numeric"></label>
+              <label class="field"><span>Ширина</span><div class="input-unit"><input id="beforeWidth" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
+              <label class="field"><span>Высота</span><div class="input-unit"><input id="beforeHeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
+              <label class="field full"><span>Вес образца</span><div class="input-unit"><input id="sampleWeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>г</b></div></label>
             </div>
           </div>
 
           <div class="step-card">
             <div class="step-title"><span>3</span><div><h2>После ВТО</h2><p>Петли и ряды остаются теми же — повторно измерьте только размер образца.</p></div></div>
             <div class="field-grid two">
-              <label class="field"><span>Ширина</span><div class="input-unit"><input id="afterWidth" type="number" min="0.1" step="0.1" value="15" inputmode="decimal"><b>см</b></div></label>
-              <label class="field"><span>Высота</span><div class="input-unit"><input id="afterHeight" type="number" min="0.1" step="0.1" value="12.8" inputmode="decimal"><b>см</b></div></label>
+              <label class="field"><span>Ширина</span><div class="input-unit"><input id="afterWidth" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
+              <label class="field"><span>Высота</span><div class="input-unit"><input id="afterHeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
             </div>
             <div class="after-note">Вес после ВТО не требуется.</div>
           </div>
         </section>
 
-        <button class="primary-btn" id="calculateSampleBtn" type="button">Рассчитать образец</button>
+        <div class="sample-action-row">
+          <button class="primary-btn" id="calculateSampleBtn" type="button">Рассчитать образец</button>
+          <button class="ghost-btn reset-btn" id="resetSampleBtn" type="button">Сбросить расчёт</button>
+        </div>
         <div class="validation" id="sampleValidation" role="alert" aria-live="polite"></div>
 
         <section class="result-card" id="sampleResultCard" hidden aria-live="polite">
@@ -184,10 +188,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js"></script>
-  <script src="js/config.js?v=20261001-rebuild03"></script>
-  <script src="js/data.js?v=20261001-rebuild03"></script>
-  <script src="js/parser.js?v=20261001-rebuild03"></script>
-  <script src="js/vk-catalog.js?v=20261001-rebuild03"></script>
-  <script src="js/app.js?v=20261001-rebuild03"></script>
+  <script src="js/config.js?v=20261001-rebuild04"></script>
+  <script src="js/data.js?v=20261001-rebuild04"></script>
+  <script src="js/parser.js?v=20261001-rebuild04"></script>
+  <script src="js/vk-catalog.js?v=20261001-rebuild04"></script>
+  <script src="js/app.js?v=20261001-rebuild04"></script>
 </body>
 </html>
