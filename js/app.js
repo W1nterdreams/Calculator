@@ -11,7 +11,7 @@
   const round=(n,d=1)=>Math.round(n*Math.pow(10,d))/Math.pow(10,d);
 
   function blankComposition(){return Array.from({length:6},()=>({percent:'',material:''}));}
-  function newYarn(id){return {id,meters:'',weight:'',count:1,compositionParts:blankComposition()};}
+  function newYarn(id){return {id,meters:'',weight:'',compositionParts:blankComposition()};}
 
   const state={
     yarns:[newYarn(1)],
@@ -88,7 +88,6 @@
         <div class="component-fields">
           <label class="field"><span>Длина</span><div class="input-unit"><input data-yarn-field="meters" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.meters)}" placeholder="1500"><b>м</b></div></label>
           <label class="field"><span>Вес</span><div class="input-unit"><input data-yarn-field="weight" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.weight)}" placeholder="100"><b>г</b></div></label>
-          <label class="field"><span>Нитей этого вида</span><input data-yarn-field="count" type="number" min="1" max="10" step="1" inputmode="numeric" value="${escapeHtml(y.count)}"></label>
         </div>
         <div class="component-composition">
           <div class="composition-heading"><label>Состав · до 6 компонентов</label><span class="composition-total ${total.ok?'is-ok':'is-warn'}">Итого: ${fmt(total.sum,0)}%</span></div>
@@ -105,20 +104,20 @@
   function computeMix(){
     const active=[];const warnings=[];
     for(const [index,y] of state.yarns.entries()){
-      const meters=numeric(y.meters),weight=numeric(y.weight),count=clamp(Math.round(numeric(y.count)||1),1,10);
+      const meters=numeric(y.meters),weight=numeric(y.weight);
       if(!meters||meters<=0||!weight||weight<=0)continue;
       const metersPer100=meters/weight*100;
       const comp=compositionForYarn(normalizeCompositionParts(y));
       if(Math.abs(comp.sum-100)>0.15)warnings.push(`Нить ${index+1}: состав сейчас ${fmt(comp.sum,0)}%, нужно 100%.`);
-      active.push({...y,meters,weight,count,metersPer100,compositionParts:comp.parts,compositionSum:comp.sum});
+      active.push({...y,meters,weight,metersPer100,compositionParts:comp.parts,compositionSum:comp.sum});
     }
     if(!active.length)return null;
-    const massFactor=active.reduce((sum,y)=>sum+y.count/y.metersPer100,0);
+    const massFactor=active.reduce((sum,y)=>sum+1/y.metersPer100,0);
     if(!(massFactor>0))return null;
     const combinedMeterage=1/massFactor;
     const totals=new Map();
     for(const y of active){
-      const strandMassFactor=y.count/y.metersPer100;
+      const strandMassFactor=1/y.metersPer100;
       let known=0;
       for(const p of y.compositionParts){
         known+=p.percent;
@@ -128,7 +127,7 @@
       if(unknown>0.05)totals.set('не указано',(totals.get('не указано')||0)+strandMassFactor*(unknown/100));
     }
     const composition=[...totals.entries()].map(([material,factor])=>({material,percent:factor/massFactor*100})).filter(x=>x.percent>.01).sort((a,b)=>b.percent-a.percent);
-    return {active,combinedMeterage,totalStrands:active.reduce((sum,y)=>sum+y.count,0),composition,warnings};
+    return {active,combinedMeterage,totalStrands:active.length,composition,warnings};
   }
 
   function updateMix(){
