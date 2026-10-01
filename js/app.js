@@ -10,7 +10,7 @@
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const round=(n,d=1)=>Math.round(n*Math.pow(10,d))/Math.pow(10,d);
 
-  function blankComposition(){return Array.from({length:5},()=>({percent:'',material:''}));}
+  function blankComposition(){return Array.from({length:6},()=>({percent:'',material:''}));}
   function newYarn(id){return {id,meters:'',weight:'',count:1,compositionParts:blankComposition()};}
 
   const state={
@@ -55,8 +55,8 @@
 
   function normalizeCompositionParts(y){
     if(!Array.isArray(y.compositionParts))y.compositionParts=[];
-    while(y.compositionParts.length<5)y.compositionParts.push({percent:'',material:''});
-    y.compositionParts=y.compositionParts.slice(0,5).map(x=>({percent:x?.percent??'',material:x?.material??''}));
+    while(y.compositionParts.length<6)y.compositionParts.push({percent:'',material:''});
+    y.compositionParts=y.compositionParts.slice(0,6).map(x=>({percent:x?.percent??'',material:x?.material??''}));
     return y.compositionParts;
   }
 
@@ -69,7 +69,7 @@
 
   function compositionPairHtml(part,i){
     return `<div class="composition-pair">
-      <div class="percent-input"><input data-comp-index="${i}" data-comp-field="percent" type="number" min="0" max="100" step="0.1" inputmode="decimal" value="${escapeHtml(part.percent)}" placeholder="%"><span>%</span></div>
+      <div class="percent-input"><input data-comp-index="${i}" data-comp-field="percent" type="number" min="0" max="100" step="1" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(part.percent)}" placeholder="%"><span>%</span></div>
       <input class="material-input" data-comp-index="${i}" data-comp-field="material" type="text" value="${escapeHtml(part.material)}" placeholder="меринос">
     </div>`;
   }
@@ -91,7 +91,7 @@
           <label class="field"><span>Нитей этого вида</span><input data-yarn-field="count" type="number" min="1" max="10" step="1" inputmode="numeric" value="${escapeHtml(y.count)}"></label>
         </div>
         <div class="component-composition">
-          <div class="composition-heading"><label>Состав · до 5 компонентов</label><span class="composition-total ${total.ok?'is-ok':'is-warn'}">Итого: ${fmt(total.sum,1)}%</span></div>
+          <div class="composition-heading"><label>Состав · до 6 компонентов</label><span class="composition-total ${total.ok?'is-ok':'is-warn'}">Итого: ${fmt(total.sum,0)}%</span></div>
           <div class="composition-pairs">${parts.map(compositionPairHtml).join('')}</div>
           <div class="component-hint">В каждой паре укажите процент и сырьё. Сумма компонентов одной нити должна быть 100%.</div>
         </div>
@@ -109,7 +109,7 @@
       if(!meters||meters<=0||!weight||weight<=0)continue;
       const metersPer100=meters/weight*100;
       const comp=compositionForYarn(normalizeCompositionParts(y));
-      if(Math.abs(comp.sum-100)>0.15)warnings.push(`Нить ${index+1}: состав сейчас ${fmt(comp.sum,1)}%, нужно 100%.`);
+      if(Math.abs(comp.sum-100)>0.15)warnings.push(`Нить ${index+1}: состав сейчас ${fmt(comp.sum,0)}%, нужно 100%.`);
       active.push({...y,meters,weight,count,metersPer100,compositionParts:comp.parts,compositionSum:comp.sum});
     }
     if(!active.length)return null;
@@ -141,7 +141,7 @@
 
   function updateCompositionTotal(y,card){
     const badge=card?.querySelector('.composition-total');if(!badge)return;
-    const t=compositionTotalState(y);badge.textContent=`Итого: ${fmt(t.sum,1)}%`;badge.classList.toggle('is-ok',t.ok);badge.classList.toggle('is-warn',!t.ok);
+    const t=compositionTotalState(y);badge.textContent=`Итого: ${fmt(t.sum,0)}%`;badge.classList.toggle('is-ok',t.ok);badge.classList.toggle('is-warn',!t.ok);
   }
 
   function readYarnInput(target){
