@@ -11,7 +11,7 @@
   const round=(n,d=1)=>Math.round(n*Math.pow(10,d))/Math.pow(10,d);
 
   function blankComposition(){return Array.from({length:6},()=>({percent:'',material:''}));}
-  function newYarn(id){return {id,meters:'',weight:'',count:1,compositionParts:blankComposition()};}
+  function newYarn(id){return {id,meters:'',weight:100,count:1,compositionParts:blankComposition()};}
 
   const state={
     yarns:[newYarn(1)],
@@ -32,7 +32,7 @@
   const els={
     consentScreen:$('#consentScreen'),app:$('#app'),consentBtn:$('#consentBtn'),vkState:$('#vkState'),toast:$('#toast'),
     yarnComponents:$('#yarnComponents'),addYarnBtn:$('#addYarnBtn'),mixResult:$('#mixResult'),resetSampleBtn:$('#resetSampleBtn'),
-    beforeStitches:$('#beforeStitches'),beforeRows:$('#beforeRows'),beforeWidth:$('#beforeWidth'),beforeHeight:$('#beforeHeight'),sampleWeight:$('#sampleWeight'),afterWidth:$('#afterWidth'),afterHeight:$('#afterHeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),beforeGaugeResult:$('#beforeGaugeResult'),beforeRowsResult:$('#beforeRowsResult'),afterGaugeResult:$('#afterGaugeResult'),afterRowsResult:$('#afterRowsResult'),widthChangeResult:$('#widthChangeResult'),widthChangeText:$('#widthChangeText'),heightChangeResult:$('#heightChangeResult'),heightChangeText:$('#heightChangeText'),areaConsumptionResult:$('#areaConsumptionResult'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
+    beforeStitches:$('#beforeStitches'),beforeRows:$('#beforeRows'),beforeWidth:$('#beforeWidth'),beforeHeight:$('#beforeHeight'),sampleWeight:$('#sampleWeight'),afterWidth:$('#afterWidth'),afterHeight:$('#afterHeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),beforeGaugeResult:$('#beforeGaugeResult'),beforeRowsResult:$('#beforeRowsResult'),afterGaugeResult:$('#afterGaugeResult'),afterRowsResult:$('#afterRowsResult'),widthChangeResult:$('#widthChangeResult'),widthChangeText:$('#widthChangeText'),heightChangeResult:$('#heightChangeResult'),heightChangeText:$('#heightChangeText'),areaConsumptionResult:$('#areaConsumptionResult'),sampleAreaResult:$('#sampleAreaResult'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
     sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
     refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid')
   };
@@ -68,9 +68,16 @@
   }
 
   function compositionPairHtml(part,i){
-    return `<div class="composition-pair">
-      <div class="percent-input"><input data-comp-index="${i}" data-comp-field="percent" type="number" min="0" max="100" step="1" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(part.percent)}" placeholder="%"><span>%</span></div>
-      <input class="material-input" data-comp-index="${i}" data-comp-field="material" type="text" value="${escapeHtml(part.material)}" placeholder="меринос">
+    return `<div class="composition-slot">
+      <span class="composition-slot-label">Компонент ${i+1}</span>
+      <div class="composition-pair">
+        <div class="percent-stepper">
+          <button type="button" data-comp-delta="-1" data-comp-index="${i}" aria-label="Уменьшить процент">−</button>
+          <div class="percent-input"><input data-comp-index="${i}" data-comp-field="percent" type="number" min="0" max="100" step="1" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(part.percent)}" placeholder="0"><span>%</span></div>
+          <button type="button" data-comp-delta="1" data-comp-index="${i}" aria-label="Увеличить процент">+</button>
+        </div>
+        <input class="material-input" data-comp-index="${i}" data-comp-field="material" type="text" value="${escapeHtml(part.material)}" placeholder="меринос">
+      </div>
     </div>`;
   }
 
@@ -84,16 +91,16 @@
     els.yarnComponents.innerHTML=state.yarns.map((y,index)=>{
       const parts=normalizeCompositionParts(y);const total=compositionTotalState(y);
       return `<article class="yarn-component" data-yarn-id="${y.id}">
-        <div class="yarn-component-head"><h3>Нить ${index+1}</h3>${state.yarns.length>1?'<button class="remove-yarn" type="button" data-remove-yarn>Убрать</button>':''}</div>
-        <div class="component-fields">
-          <label class="field"><span>Длина</span><div class="input-unit"><input data-yarn-field="meters" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.meters)}" placeholder="1500"><b>м</b></div></label>
-          <label class="field"><span>Вес</span><div class="input-unit"><input data-yarn-field="weight" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.weight)}" placeholder="100"><b>г</b></div></label>
-          <label class="field"><span>Нитей этого вида</span><input data-yarn-field="count" type="number" min="1" max="10" step="1" inputmode="numeric" value="${escapeHtml(y.count)}"></label>
-        </div>
-        <div class="component-composition">
-          <div class="composition-heading"><label>Состав · до 6 компонентов</label><span class="composition-total ${total.ok?'is-ok':'is-warn'}">Итого: ${fmt(total.sum,0)}%</span></div>
-          <div class="composition-pairs">${parts.map(compositionPairHtml).join('')}</div>
-          <div class="component-hint">В каждой паре укажите процент и сырьё. Сумма компонентов одной нити должна быть 100%.</div>
+        <div class="yarn-component-head"><div class="yarn-title-wrap"><span class="yarn-dot"></span><h3>Нить ${index+1}</h3></div>${state.yarns.length>1?'<button class="remove-yarn" type="button" data-remove-yarn aria-label="Убрать нить">✕</button>':''}</div>
+        <div class="yarn-row-layout">
+          <div class="yarn-basic-panel">
+            <label class="field"><span>Метраж, м / 100 г</span><input data-yarn-field="meters" type="number" min="1" step="1" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(y.meters)}" placeholder="1400"></label>
+            <label class="field"><span>Количество нитей</span><div class="count-stepper"><button type="button" data-count-delta="-1">−</button><input data-yarn-field="count" type="number" min="1" max="10" step="1" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(y.count)}"><button type="button" data-count-delta="1">+</button></div></label>
+          </div>
+          <div class="component-composition">
+            <div class="composition-heading"><label>Состав нити ${index+1}</label><span class="composition-total ${total.ok?'is-ok':'is-warn'}">в сумме ${fmt(total.sum,0)}%</span></div>
+            <div class="composition-pairs">${parts.map(compositionPairHtml).join('')}</div>
+          </div>
         </div>
       </article>`;
     }).join('');
@@ -105,9 +112,9 @@
   function computeMix(){
     const active=[];const warnings=[];
     for(const [index,y] of state.yarns.entries()){
-      const meters=numeric(y.meters),weight=numeric(y.weight),count=clamp(Math.round(numeric(y.count)||1),1,10);
-      if(!meters||meters<=0||!weight||weight<=0)continue;
-      const metersPer100=meters/weight*100;
+      const meters=numeric(y.meters),count=clamp(Math.round(numeric(y.count)||1),1,10);
+      if(!meters||meters<=0)continue;
+      const weight=100,metersPer100=meters;
       const comp=compositionForYarn(normalizeCompositionParts(y));
       if(Math.abs(comp.sum-100)>0.15)warnings.push(`Нить ${index+1}: состав сейчас ${fmt(comp.sum,0)}%, нужно 100%.`);
       active.push({...y,meters,weight,count,metersPer100,compositionParts:comp.parts,compositionSum:comp.sum});
@@ -133,9 +140,9 @@
 
   function updateMix(){
     state.mix=computeMix();
-    if(!state.mix){els.mixResult.innerHTML='<div class="mix-box"><div class="mix-top"><span>Итог рабочей нити</span><strong>Укажите метраж</strong></div></div>';return;}
-    const tags=state.mix.composition.map(x=>`<span class="mix-tag">${escapeHtml(x.material)} — ${fmt(x.percent,1)}%</span>`).join('');
-    els.mixResult.innerHTML=`<div class="mix-box"><div class="mix-top"><span>Итоговый метраж · ${state.mix.totalStrands} ${state.mix.totalStrands===1?'нить':'нитей'}</span><strong>≈ ${fmt(state.mix.combinedMeterage)} м/100 г</strong></div><div class="mix-composition">${tags||'<span class="mix-tag">состав не указан</span>'}</div>${state.mix.warnings.length?`<div class="mix-warning">${state.mix.warnings.map(escapeHtml).join(' ')}</div>`:''}</div>`;
+    if(!state.mix){els.mixResult.innerHTML='<div class="mix-summary-card"><span>Итоговый метраж</span><strong>—</strong></div><div class="mix-summary-card mix-composition-card"><span>Итоговый состав</span><small>Заполните данные нитей</small></div>';return;}
+    const comp=state.mix.composition.map(x=>`<div><b>${fmt(x.percent,0)}%</b><span>${escapeHtml(x.material)}</span></div>`).join('');
+    els.mixResult.innerHTML=`<div class="mix-summary-card"><span>Итоговый метраж</span><strong>${fmt(state.mix.combinedMeterage)} м / 100 г</strong></div><div class="mix-summary-card mix-composition-card"><span>Итоговый состав</span><div class="mix-composition-list">${comp||'<small>состав не указан</small>'}</div>${state.mix.warnings.length?`<div class="mix-warning">${state.mix.warnings.map(escapeHtml).join(' ')}</div>`:''}</div>`;
     if(state.sample&&state.mix)renderSampleResult(state.sample,false);
   }
 
@@ -150,8 +157,28 @@
     const field=target.dataset.yarnField;
     if(field){y[field]=target.value;updateMix();return;}
     const compIndex=Number(target.dataset.compIndex),compField=target.dataset.compField;
-    if(Number.isInteger(compIndex)&&compIndex>=0&&compIndex<5&&(compField==='percent'||compField==='material')){
+    if(Number.isInteger(compIndex)&&compIndex>=0&&compIndex<6&&(compField==='percent'||compField==='material')){
       const parts=normalizeCompositionParts(y);parts[compIndex][compField]=target.value;updateCompositionTotal(y,card);updateMix();
+    }
+  }
+
+  function adjustYarnControl(button){
+    const card=button.closest('[data-yarn-id]');if(!card)return;
+    const y=state.yarns.find(x=>x.id===Number(card.dataset.yarnId));if(!y)return;
+    if(button.hasAttribute('data-comp-delta')){
+      const i=Number(button.dataset.compIndex),delta=Number(button.dataset.compDelta)||0;
+      if(!Number.isInteger(i)||i<0||i>=6)return;
+      const parts=normalizeCompositionParts(y);
+      const current=Math.round(numeric(parts[i].percent)||0);
+      parts[i].percent=String(clamp(current+delta,0,100));
+      const input=card.querySelector(`[data-comp-index="${i}"][data-comp-field="percent"]`);if(input)input.value=parts[i].percent;
+      updateCompositionTotal(y,card);updateMix();return;
+    }
+    if(button.hasAttribute('data-count-delta')){
+      const delta=Number(button.dataset.countDelta)||0;
+      y.count=clamp(Math.round(numeric(y.count)||1)+delta,1,10);
+      const input=card.querySelector('[data-yarn-field="count"]');if(input)input.value=y.count;
+      updateMix();
     }
   }
 
@@ -195,22 +222,26 @@
     els.widthChangeText.textContent=changeText(r.widthChange,'Ширина');
     els.heightChangeResult.textContent=`${r.heightChange>=0?'+':''}${fmt(r.heightChange,1)}%`;
     els.heightChangeText.textContent=changeText(r.heightChange,'Высота');
-    els.areaConsumptionResult.textContent=`${fmt(r.gramsPer100cm2,2)} г/100 см²`;
+    if(els.sampleAreaResult)els.sampleAreaResult.textContent=`${fmt(r.afterArea,1)} см²`;
+    els.areaConsumptionResult.textContent=`${fmt(r.weight/r.afterArea,3)} г/см²`;
     if(state.mix){
       const metersUsed=r.weight/100*state.mix.combinedMeterage;
-      els.sampleMeterageResult.textContent=`≈ ${fmt(state.mix.combinedMeterage)} м/100 г`;
-      els.sampleMetersUsedResult.textContent=`в образце ≈ ${fmt(metersUsed,1)} м`;
+      els.sampleMeterageResult.textContent=`${fmt(metersUsed,1)} м`;
+      els.sampleMetersUsedResult.textContent=`рабочая нить ${fmt(state.mix.combinedMeterage)} м/100 г`;
     }else{
-      els.sampleMeterageResult.textContent='не рассчитан';els.sampleMetersUsedResult.textContent='заполните рабочую нить';
+      els.sampleMeterageResult.textContent='—';els.sampleMetersUsedResult.textContent='заполните рабочую нить';
     }
-    if(shouldScroll)els.sampleResultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
+    if(shouldScroll&&window.innerWidth<700)els.sampleResultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
 
   function resetSampleCalculator(){
     state.yarns=[newYarn(1)];state.nextYarnId=2;state.mix=null;state.sample=null;
     [els.beforeStitches,els.beforeRows,els.beforeWidth,els.beforeHeight,els.sampleWeight,els.afterWidth,els.afterHeight].forEach(input=>{input.value='';});
-    els.sampleValidation.textContent='';els.sampleResultCard.hidden=true;renderYarns();
-    showToast('Расчёт сброшен');
+    els.sampleValidation.textContent='';
+    els.beforeGaugeResult.textContent='—';els.beforeRowsResult.textContent='—';els.afterGaugeResult.textContent='—';els.afterRowsResult.textContent='—';
+    els.widthChangeResult.textContent='—';els.widthChangeText.textContent='—';els.heightChangeResult.textContent='—';els.heightChangeText.textContent='—';
+    if(els.sampleAreaResult)els.sampleAreaResult.textContent='—';els.areaConsumptionResult.textContent='—';els.sampleMeterageResult.textContent='—';els.sampleMetersUsedResult.textContent='—';
+    renderYarns();showToast('Расчёт сброшен');
   }
 
   function applySampleToProduct(){
@@ -346,7 +377,7 @@
   $$('[data-go]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.go)));
   els.addYarnBtn.addEventListener('click',()=>{if(state.yarns.length>=5)return;state.yarns.push(newYarn(state.nextYarnId++));renderYarns();});
   els.yarnComponents.addEventListener('input',e=>readYarnInput(e.target));
-  els.yarnComponents.addEventListener('click',e=>{const b=e.target.closest('[data-remove-yarn]');if(!b)return;removeYarnPreservePosition(b);});
+  els.yarnComponents.addEventListener('click',e=>{const adjust=e.target.closest('[data-comp-delta],[data-count-delta]');if(adjust){adjustYarnControl(adjust);return;}const b=e.target.closest('[data-remove-yarn]');if(!b)return;removeYarnPreservePosition(b);});
   $('#calculateSampleBtn').addEventListener('click',calculateSample);els.resetSampleBtn.addEventListener('click',resetSampleCalculator);
   els.useSampleBtn.addEventListener('click',applySampleToProduct);els.pullSampleBtn.addEventListener('click',applySampleToProduct);
   els.garmentGrid.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b)return;state.garmentId=b.dataset.id;state.sizeIndex=Math.min(3,garment().sizes.length-1);renderGarments();renderSizes();els.productResultCard.hidden=true;state.product=null;renderMatches();});
