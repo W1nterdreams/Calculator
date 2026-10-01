@@ -1,31 +1,71 @@
 (function(){
-  const G = {8:.414,9:.445,10:.47,11:.495,12:.521,13:.557,14:.593,15:.67,16:.75,17:.78,18:.807,19:.9,20:1,21:1.075,22:1.15,23:1.285,24:1.421,25:1.51,26:1.60,27:1.70,28:1.80,29:1.925,30:2.05};
   const meterRanges = {
     8:[40,60],9:[50,70],10:[60,80],11:[65,85],12:[70,95],13:[80,105],14:[90,120],15:[105,150],16:[120,180],17:[150,200],18:[180,220],19:[200,250],20:[220,280],21:[250,300],22:[280,330],23:[300,350],24:[320,370],25:[350,410],26:[380,440],27:[410,480],28:[440,520],29:[480,570],30:[520,620]
   };
-  function s(label, base){return {label,base};}
+
+  function adultSizes(from,to,height){
+    const out=[];
+    for(let ru=from;ru<=to;ru+=2) out.push({label:String(ru),ruSize:ru,chest:ru*2,height});
+    return out;
+  }
+
+  // Базовые детские типовые фигуры для расчётной сетки: рост + ориентир ОГ.
+  // В стандартах одному росту могут соответствовать несколько полнот; значения ниже — базовая линия интерфейса,
+  // которую пользователь при необходимости уточняет через размеры готового изделия.
+  const childSizes = [
+    [86,52],[92,52],[98,56],[104,56],[110,60],[116,60],[122,64],[128,64],
+    [134,68],[140,72],[146,76],[152,80],[158,84],[164,88]
+  ].map(([height,chest])=>({label:String(height),height,chest,child:true}));
+
   const garments = [
-    {id:'child_cardigan',name:'Детский жакет',icon:'cardigan',child:true,sizes:[s('86–92',480),s('98–104',570),s('110–116',670),s('122–128',780),s('134–140',900),s('146–152',1040)]},
-    {id:'child_pullover',name:'Детский пуловер',icon:'pullover',child:true,sizes:[s('86–92',420),s('98–104',510),s('110–116',600),s('122–128',700),s('134–140',810),s('146–152',940)]},
-    {id:'child_socks',name:'Детские носки',icon:'socks',child:true,sizes:[s('20–22',120),s('23–25',145),s('26–28',170),s('29–31',195),s('32–34',220),s('35–36',245)]},
-    {id:'child_vest',name:'Детский жилет',icon:'vest',child:true,sizes:[s('86–92',300),s('98–104',360),s('110–116',420),s('122–128',490),s('134–140',570),s('146–152',650)]},
-    {id:'blanket',name:'Одеяло',icon:'blanket',sizes:[s('70×90',1100),s('80×100',1350),s('100×120',1900),s('120×150',2700),s('150×200',4200),s('180×200',5000)]},
-    {id:'hat',name:'Шапка',icon:'hat',sizes:[s('50',150),s('52',165),s('54',180),s('56',195),s('58',210),s('60',225)]},
-    {id:'men_cardigan',name:'Мужской жакет',icon:'cardigan',sizes:[s('44–46',1450),s('48–50',1580),s('52–54',1720),s('56–58',1870),s('60–62',2020),s('64–66',2180)]},
-    {id:'men_pullover',name:'Мужской пуловер',icon:'pullover',sizes:[s('44–46',1280),s('48–50',1420),s('52–54',1560),s('56–58',1700),s('60–62',1850),s('64–66',2000)]},
-    {id:'men_vest',name:'Мужской жилет',icon:'vest',sizes:[s('44–46',860),s('48–50',950),s('52–54',1040),s('56–58',1140),s('60–62',1240),s('64–66',1350)]},
-    {id:'mittens',name:'Рукавицы и перчатки',icon:'mittens',sizes:[s('S',170),s('M',200),s('L',230),s('XL',260)]},
-    {id:'scarf',name:'Шарф',icon:'scarf',sizes:[s('20×140',370),s('20×180',470),s('25×180',590),s('30×180',710),s('30×200',790)]},
-    {id:'shawl',name:'Платок / шаль',icon:'shawl',sizes:[s('малый',650),s('средний',900),s('большой',1250),s('очень большой',1550)]},
-    {id:'socks',name:'Носки',icon:'socks',sizes:[s('35–36',260),s('37–38',285),s('39–40',310),s('41–42',335),s('43–44',360),s('45–46',390)]},
-    {id:'women_cardigan',name:'Женский жакет',icon:'cardigan',sizes:[s('40',1190),s('42',1260),s('44',1330),s('46',1400),s('48',1470),s('50',1540),s('52',1620),s('54',1700),s('56',1780),s('58',1870),s('60',1960)]},
-    {id:'women_pullover',name:'Женский пуловер',icon:'pullover',sizes:[s('40',1080),s('42',1140),s('44',1210),s('46',1280),s('48',1350),s('50',1420),s('52',1490),s('54',1570),s('56',1650),s('58',1730),s('60',1820)]},
-    {id:'women_vest',name:'Женский жилет',icon:'vest',sizes:[s('40',720),s('42',760),s('44',810),s('46',860),s('48',910),s('50',960),s('52',1010),s('54',1070),s('56',1130),s('58',1190),s('60',1250)]}
+    {id:'child_cardigan',name:'Детский жакет',icon:'cardigan',child:true,sex:'child',geometry:'torso',variant:'cardigan',ease:8,sizes:childSizes},
+    {id:'child_pullover',name:'Детский пуловер',icon:'pullover',child:true,sex:'child',geometry:'torso',variant:'pullover',ease:6,sizes:childSizes},
+    {id:'child_sweater',name:'Детский свитер',icon:'pullover',child:true,sex:'child',geometry:'torso',variant:'sweater',ease:8,sizes:childSizes},
+    {id:'child_vest',name:'Детский жилет',icon:'vest',child:true,sex:'child',geometry:'torso',variant:'vest',ease:6,sizes:childSizes},
+    {id:'child_socks',name:'Детские носки',icon:'socks',child:true,geometry:'socks',sizes:[
+      {label:'20–22',foot:14,circ:15,leg:12},{label:'23–25',foot:16,circ:16,leg:14},{label:'26–28',foot:18,circ:17,leg:15},
+      {label:'29–31',foot:20,circ:18,leg:16},{label:'32–34',foot:22,circ:19,leg:17},{label:'35–36',foot:23,circ:20,leg:18}
+    ]},
+
+    {id:'women_cardigan',name:'Женский жакет',icon:'cardigan',sex:'women',geometry:'torso',variant:'cardigan',ease:12,sizes:adultSizes(40,66,164)},
+    {id:'women_pullover',name:'Женский пуловер',icon:'pullover',sex:'women',geometry:'torso',variant:'pullover',ease:8,sizes:adultSizes(40,66,164)},
+    {id:'women_sweater',name:'Женский свитер',icon:'pullover',sex:'women',geometry:'torso',variant:'sweater',ease:10,sizes:adultSizes(40,66,164)},
+    {id:'women_vest',name:'Женский жилет',icon:'vest',sex:'women',geometry:'torso',variant:'vest',ease:6,sizes:adultSizes(40,66,164)},
+
+    {id:'men_cardigan',name:'Мужской жакет',icon:'cardigan',sex:'men',geometry:'torso',variant:'cardigan',ease:14,sizes:adultSizes(42,66,176)},
+    {id:'men_pullover',name:'Мужской пуловер',icon:'pullover',sex:'men',geometry:'torso',variant:'pullover',ease:10,sizes:adultSizes(42,66,176)},
+    {id:'men_sweater',name:'Мужской свитер',icon:'pullover',sex:'men',geometry:'torso',variant:'sweater',ease:12,sizes:adultSizes(42,66,176)},
+    {id:'men_vest',name:'Мужской жилет',icon:'vest',sex:'men',geometry:'torso',variant:'vest',ease:8,sizes:adultSizes(42,66,176)},
+
+    {id:'hat',name:'Шапка',icon:'hat',geometry:'hat',sizes:[
+      {label:'50',head:50,height:20},{label:'52',head:52,height:20.5},{label:'54',head:54,height:21},{label:'56',head:56,height:21.5},{label:'58',head:58,height:22},{label:'60',head:60,height:22.5}
+    ]},
+    {id:'mittens',name:'Рукавицы и перчатки',icon:'mittens',geometry:'mittens',sizes:[
+      {label:'S',handCirc:18,handLength:18},{label:'M',handCirc:20,handLength:19},{label:'L',handCirc:22,handLength:20.5},{label:'XL',handCirc:24,handLength:22}
+    ]},
+    {id:'socks',name:'Носки',icon:'socks',geometry:'socks',sizes:[
+      {label:'35–36',foot:23,circ:20.5,leg:18},{label:'37–38',foot:24.5,circ:21.5,leg:19},{label:'39–40',foot:26,circ:22.5,leg:20},
+      {label:'41–42',foot:27.5,circ:23.5,leg:21},{label:'43–44',foot:29,circ:24.5,leg:22},{label:'45–46',foot:30.5,circ:25.5,leg:23}
+    ]},
+    {id:'scarf',name:'Шарф',icon:'scarf',geometry:'rectangle',sizes:[
+      {label:'20×140',width:20,height:140},{label:'20×180',width:20,height:180},{label:'25×180',width:25,height:180},{label:'30×180',width:30,height:180},{label:'30×200',width:30,height:200}
+    ]},
+    {id:'shawl',name:'Платок / шаль',icon:'shawl',geometry:'triangle',sizes:[
+      {label:'120×60',width:120,height:60},{label:'150×75',width:150,height:75},{label:'180×90',width:180,height:90},{label:'200×100',width:200,height:100}
+    ]},
+    {id:'blanket',name:'Одеяло',icon:'blanket',geometry:'rectangle',sizes:[
+      {label:'70×90',width:70,height:90},{label:'80×100',width:80,height:100},{label:'100×120',width:100,height:120},{label:'120×150',width:120,height:150},{label:'150×200',width:150,height:200},{label:'180×200',width:180,height:200}
+    ]}
   ];
+
   const sampleDescriptions = [
     'Италия. Cariaggi. Art. T2000 Cashmere plus. Col. C2425 navy (темно-синий). 100% кашемир. 100г/1400м (1/28). В наличии 97г. 100г/1190 руб.',
     'Италия. Stock yarn italy. Galicia. Col. Classic blue (классический синий, припыленный джинс). 50% беби верблюд, 50% меринос. 100г/550м (2/11). В наличии 870г. 100г/720 руб.',
     'Италия. Stock Yarn. Paillettes 100 WV. Цвет золотая горчица, медовый, янтарный. 100% гребенной меринос экстрафайн с пайетками. 100г/500м.'
   ];
-  window.MANIA_DATA={gaugeMultipliers:G,meterRanges,garments,sampleDescriptions,reserve:0.10};
+
+  window.MANIA_DATA={
+    meterRanges,garments,sampleDescriptions,reserve:0.10,
+    standards:{womenReferenceHeight:164,menReferenceHeight:176,interHeightStep:6,garmentLengthStep:4,sleeveLengthStep:4}
+  };
 })();

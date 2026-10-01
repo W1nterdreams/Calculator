@@ -23,6 +23,7 @@
     productGauge:20,
     productRowGauge:null,
     productMeterage:280,
+    productDims:null,
     product:null,
     vkCatalog:[],
     vkMeta:null,
@@ -32,8 +33,8 @@
   const els={
     consentScreen:$('#consentScreen'),app:$('#app'),consentBtn:$('#consentBtn'),vkState:$('#vkState'),toast:$('#toast'),
     yarnComponents:$('#yarnComponents'),addYarnBtn:$('#addYarnBtn'),mixResult:$('#mixResult'),resetSampleBtn:$('#resetSampleBtn'),
-    beforeStitches:$('#beforeStitches'),beforeRows:$('#beforeRows'),beforeWidth:$('#beforeWidth'),beforeHeight:$('#beforeHeight'),sampleWeight:$('#sampleWeight'),afterWidth:$('#afterWidth'),afterHeight:$('#afterHeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),beforeGaugeResult:$('#beforeGaugeResult'),beforeRowsResult:$('#beforeRowsResult'),afterGaugeResult:$('#afterGaugeResult'),afterRowsResult:$('#afterRowsResult'),widthChangeResult:$('#widthChangeResult'),widthChangeText:$('#widthChangeText'),heightChangeResult:$('#heightChangeResult'),heightChangeText:$('#heightChangeText'),areaConsumptionResult:$('#areaConsumptionResult'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
-    sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
+    beforeStitches:$('#beforeStitches'),beforeRows:$('#beforeRows'),beforeWidth:$('#beforeWidth'),beforeHeight:$('#beforeHeight'),sampleWeight:$('#sampleWeight'),afterWidth:$('#afterWidth'),afterHeight:$('#afterHeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),beforeGaugeResult:$('#beforeGaugeResult'),beforeRowsResult:$('#beforeRowsResult'),afterGaugeResult:$('#afterGaugeResult'),afterRowsResult:$('#afterRowsResult'),widthChangeResult:$('#widthChangeResult'),widthChangeText:$('#widthChangeText'),heightChangeResult:$('#heightChangeResult'),heightChangeText:$('#heightChangeText'),areaConsumptionResult:$('#areaConsumptionResult'),areaConsumptionHint:$('#areaConsumptionHint'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
+    sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productDimensionsCard:$('#productDimensionsCard'),productDimensionsFields:$('#productDimensionsFields'),productDimensionsHint:$('#productDimensionsHint'),productDimensionSummary:$('#productDimensionSummary'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
     refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid')
   };
 
@@ -149,7 +150,7 @@
     const field=target.dataset.yarnField;
     if(field){y[field]=target.value;updateMix();return;}
     const compIndex=Number(target.dataset.compIndex),compField=target.dataset.compField;
-    if(Number.isInteger(compIndex)&&compIndex>=0&&compIndex<5&&(compField==='percent'||compField==='material')){
+    if(Number.isInteger(compIndex)&&compIndex>=0&&compIndex<6&&(compField==='percent'||compField==='material')){
       const parts=normalizeCompositionParts(y);parts[compIndex][compField]=target.value;updateCompositionTotal(y,card);updateMix();
     }
   }
@@ -168,14 +169,15 @@
 
   function calculateSample(){
     const stitches=numeric(els.beforeStitches.value),rows=numeric(els.beforeRows.value),bw=numeric(els.beforeWidth.value),bh=numeric(els.beforeHeight.value),weight=numeric(els.sampleWeight.value),aw=numeric(els.afterWidth.value),ah=numeric(els.afterHeight.value);
-    if(!stitches||stitches<=0||!rows||rows<=0||!bw||bw<=0||!bh||bh<=0||!weight||weight<=0||!aw||aw<=0||!ah||ah<=0){els.sampleValidation.textContent='Заполните все размеры, количество петель и рядов, а также вес образца.';return null;}
+    if(!stitches||stitches<=0||!rows||rows<=0||!bw||bw<=0||!bh||bh<=0||!aw||aw<=0||!ah||ah<=0){els.sampleValidation.textContent='Заполните количество петель и рядов, а также размеры образца до и после ВТО. Вес можно не указывать.';return null;}
     els.sampleValidation.textContent='';
     const beforeGauge=stitches/bw*10,beforeRowGauge=rows/bh*10,afterGauge=stitches/aw*10,afterRowGauge=rows/ah*10;
     const widthChange=(aw-bw)/bw*100,heightChange=(ah-bh)/bh*100;
     const beforeArea=bw*bh,afterArea=aw*ah;
-    const gramsPer100cm2=weight/afterArea*100;
-    const metersUsed=state.mix?weight/100*state.mix.combinedMeterage:null;
-    state.sample={stitches,rows,bw,bh,weight,aw,ah,beforeGauge,beforeRowGauge,afterGauge,afterRowGauge,widthChange,heightChange,beforeArea,afterArea,gramsPer100cm2,metersUsed};
+    const safeWeight=weight&&weight>0?weight:null;
+    const gramsPer100cm2=safeWeight?safeWeight/afterArea*100:null;
+    const metersUsed=safeWeight&&state.mix?safeWeight/100*state.mix.combinedMeterage:null;
+    state.sample={stitches,rows,bw,bh,weight:safeWeight,aw,ah,beforeGauge,beforeRowGauge,afterGauge,afterRowGauge,widthChange,heightChange,beforeArea,afterArea,gramsPer100cm2,metersUsed};
     renderSampleResult(state.sample,true);return state.sample;
   }
 
@@ -194,11 +196,19 @@
     els.widthChangeText.textContent=changeText(r.widthChange,'Ширина');
     els.heightChangeResult.textContent=`${r.heightChange>=0?'+':''}${fmt(r.heightChange,1)}%`;
     els.heightChangeText.textContent=changeText(r.heightChange,'Высота');
-    els.areaConsumptionResult.textContent=`${fmt(r.gramsPer100cm2,2)} г/100 см²`;
+    if(r.gramsPer100cm2){
+      els.areaConsumptionResult.textContent=`${fmt(r.gramsPer100cm2,2)} г/100 см²`;
+      if(els.areaConsumptionHint)els.areaConsumptionHint.textContent='по размеру после ВТО';
+    }else{
+      els.areaConsumptionResult.textContent='не рассчитан';
+      if(els.areaConsumptionHint)els.areaConsumptionHint.textContent='вес образца не указан';
+    }
     if(state.mix){
-      const metersUsed=r.weight/100*state.mix.combinedMeterage;
       els.sampleMeterageResult.textContent=`≈ ${fmt(state.mix.combinedMeterage)} м/100 г`;
-      els.sampleMetersUsedResult.textContent=`в образце ≈ ${fmt(metersUsed,1)} м`;
+      if(r.weight){
+        const metersUsed=r.weight/100*state.mix.combinedMeterage;
+        els.sampleMetersUsedResult.textContent=`в образце ≈ ${fmt(metersUsed,1)} м`;
+      }else els.sampleMetersUsedResult.textContent='вес не указан — метры образца не считаем';
     }else{
       els.sampleMeterageResult.textContent='не рассчитан';els.sampleMetersUsedResult.textContent='заполните рабочую нить';
     }
@@ -229,14 +239,116 @@
 
   function renderSizes(){
     const g=garment();state.sizeIndex=clamp(state.sizeIndex,0,g.sizes.length-1);
-    els.sizeHint.textContent=`${g.name}: выберите размер или формат.`;
+    const size=g.sizes[state.sizeIndex];
+    if(g.geometry==='torso'){
+      const descriptor=size.child?`рост ${size.height} см · ОГ ${size.chest} см`:`российский размер ${size.ruSize} · ОГ ${size.chest} см`;
+      els.sizeHint.textContent=`${g.name}: ${descriptor}. После выбора можно уточнить размеры готового изделия в сантиметрах.`;
+    }else els.sizeHint.textContent=`${g.name}: выберите размер или формат.`;
     els.sizeChips.innerHTML=g.sizes.map((s,i)=>`<button type="button" class="chip${i===state.sizeIndex?' is-active':''}" data-i="${i}">${escapeHtml(s.label)}</button>`).join('');
+    renderProductDimensions(true);
   }
 
-  function interpolateMap(map,x){
-    const keys=Object.keys(map).map(Number).sort((a,b)=>a-b);const min=keys[0],max=keys[keys.length-1];const v=clamp(x,min,max);const lo=Math.floor(v),hi=Math.ceil(v);
-    if(lo===hi||map[hi]==null)return map[lo]??map[min];
-    const t=v-lo;return map[lo]+(map[hi]-map[lo])*t;
+  function torsoDefaults(g,size){
+    const chest=size.chest;
+    const circ=chest+(g.ease||0);
+    if(g.sex==='child'){
+      const ratio=g.variant==='vest'?.36:(g.variant==='pullover'?.38:.40);
+      const length=round(size.height*ratio,1);
+      const sleeve=g.variant==='vest'?0:round(size.height*.33,1);
+      return {bodyChest:chest,referenceHeight:size.height,circ,length,sleeve,upperArm:round(chest*.30+2,1),cuff:round(clamp(chest*.22,13,18),1),neck:round(clamp(chest*.48,24,36),1),collar:g.variant==='sweater'?6:0};
+    }
+    const women=g.sex==='women',ref=women?164:176;
+    const baseLength=women?({pullover:60,sweater:62,cardigan:62,vest:56}[g.variant]||60):({pullover:66,sweater:68,cardigan:68,vest:62}[g.variant]||66);
+    const baseSleeve=women?59:64;
+    const growth=size.height||ref;
+    const step=(growth-ref)/6*4;
+    return {bodyChest:chest,referenceHeight:growth,circ,length:round(baseLength+step,1),sleeve:g.variant==='vest'?0:round(baseSleeve+step,1),upperArm:round(chest*.28+6,1),cuff:round((women?18:20)+(chest-(women?92:100))*.035,1),neck:round(clamp(chest*.38,31,48),1),collar:g.variant==='sweater'?(women?8:9):0};
+  }
+
+  function dimensionsFor(g,size){
+    if(g.geometry==='torso')return torsoDefaults(g,size);
+    if(g.geometry==='hat')return {circ:size.head,height:size.height};
+    if(g.geometry==='rectangle'||g.geometry==='triangle')return {width:size.width,height:size.height};
+    if(g.geometry==='socks')return {foot:size.foot,circ:size.circ,leg:size.leg};
+    if(g.geometry==='mittens')return {handCirc:size.handCirc,handLength:size.handLength};
+    return {};
+  }
+
+  function dimField(key,label,value,unit='см',readonly=false){
+    return `<label class="field dimension-field"><span>${escapeHtml(label)}</span><div class="input-unit"><input data-dim="${key}" type="number" min="0.1" step="0.1" inputmode="decimal" value="${escapeHtml(value)}" ${readonly?'readonly':''}><b>${unit}</b></div></label>`;
+  }
+
+  function renderProductDimensions(reset=false){
+    const g=garment(),size=g.sizes[state.sizeIndex];
+    if(reset||!state.productDims)state.productDims=dimensionsFor(g,size);
+    const d=state.productDims||{};
+    let html='';
+    if(g.geometry==='torso'){
+      html+=dimField('bodyChest','Обхват груди по размеру',d.bodyChest,'см',true);
+      html+=dimField('circ','Обхват готового изделия',d.circ);
+      html+=dimField('length','Длина изделия',d.length);
+      if(g.variant!=='vest'){
+        html+=dimField('sleeve','Длина рукава',d.sleeve);
+        html+=dimField('upperArm','Обхват рукава сверху',d.upperArm);
+        html+=dimField('cuff','Обхват манжеты',d.cuff);
+      }
+      html+=dimField('neck','Обхват горловины',d.neck);
+      if(g.variant==='sweater')html+=dimField('collar','Высота воротника',d.collar);
+      const ref=size.child?`рост ${size.height} см, ОГ ${size.chest} см`:`RU ${size.ruSize}, ОГ ${size.chest} см; базовый рост ${size.height} см`;
+      els.productDimensionsHint.textContent=`Основа: ${ref}. Обхват изделия уже включает стандартную прибавку модели (${g.ease||0} см). Все размеры ниже можно изменить.`;
+    }else if(g.geometry==='hat'){
+      html+=dimField('circ','Обхват головы',d.circ);html+=dimField('height','Полная высота шапки',d.height);
+      els.productDimensionsHint.textContent='Размеры подставлены из выбранного обхвата головы. Высоту можно изменить под посадку и макушку.';
+    }else if(g.geometry==='rectangle'||g.geometry==='triangle'){
+      html+=dimField('width','Ширина',d.width);html+=dimField('height','Длина / высота',d.height);
+      els.productDimensionsHint.textContent=g.geometry==='triangle'?'Шаль рассчитывается как треугольное полотно по ширине и высоте.':'Расчёт ведётся по фактической площади прямоугольного полотна.';
+    }else if(g.geometry==='socks'){
+      html+=dimField('foot','Длина стопы',d.foot);html+=dimField('circ','Обхват стопы / голени',d.circ);html+=dimField('leg','Высота паголенка',d.leg);
+      els.productDimensionsHint.textContent='Для носков используется геометрическая модель пары: стопа + паголенок с поправкой на пятку и мысок.';
+    }else if(g.geometry==='mittens'){
+      html+=dimField('handCirc','Обхват кисти',d.handCirc);html+=dimField('handLength','Длина кисти',d.handLength);
+      els.productDimensionsHint.textContent='Для пары рукавиц используется площадь кисти с поправкой на большой палец и формирование верха.';
+    }
+    els.productDimensionsFields.innerHTML=html;
+    updateDimensionSummary();
+  }
+
+  function readProductDimensions(){
+    const d={};
+    els.productDimensionsFields.querySelectorAll('[data-dim]').forEach(input=>{const n=numeric(input.value);if(n!=null)d[input.dataset.dim]=n;});
+    state.productDims={...(state.productDims||{}),...d};
+    return state.productDims;
+  }
+
+  function garmentArea(g,d){
+    if(g.geometry==='torso'){
+      let area=d.circ*d.length;
+      if(g.variant!=='vest')area+=2*d.sleeve*((d.upperArm+d.cuff)/2);
+      if(g.variant==='sweater')area+=d.neck*d.collar*2;
+      else if(g.variant==='cardigan')area+=2*d.length*4+d.neck*3;
+      else if(g.variant==='vest')area+=d.neck*3+d.circ*.055*d.length;
+      else area+=d.neck*2.5;
+      return area;
+    }
+    if(g.geometry==='hat')return d.circ*d.height*.88;
+    if(g.geometry==='rectangle')return d.width*d.height;
+    if(g.geometry==='triangle')return d.width*d.height/2;
+    if(g.geometry==='socks')return 2*d.circ*(d.leg+d.foot*.92)*.95;
+    if(g.geometry==='mittens')return 2*d.handCirc*d.handLength*1.10;
+    return 0;
+  }
+
+  function updateDimensionSummary(){
+    if(!els.productDimensionSummary)return;
+    const g=garment(),d=readProductDimensions(),area=garmentArea(g,d);
+    els.productDimensionSummary.innerHTML=area>0?`<span>Расчётная площадь вязания</span><strong>≈ ${fmt(area)} см²</strong><small>до запаса 10%; используется площадь всех основных деталей</small>`:'';
+  }
+
+  function estimateMetersPer100cm2(gauge,rowGauge){
+    const rg=rowGauge&&rowGauge>0?rowGauge:gauge*1.4;
+    const stitchWidth=10/gauge,rowHeight=10/rg;
+    const loopLengthCm=2.7*(stitchWidth+rowHeight);
+    return gauge*rg*loopLengthCm/100;
   }
 
   function meterRangeForGauge(g){
@@ -250,12 +362,30 @@
 
   function calculateProduct(){
     const g=garment(),size=g.sizes[state.sizeIndex],gauge=numeric(els.productGauge.value),rowGauge=numeric(els.productRowGauge.value),meterage=numeric(els.productMeterage.value);
-    if(!size||!gauge||gauge<8||gauge>30||!meterage||meterage<=0){els.productValidation.textContent='Проверьте размер, плотность (8–30 п./10 см) и рабочий метраж.';return null;}
+    if(!size||!gauge||gauge<8||gauge>40||!meterage||meterage<=0){els.productValidation.textContent='Проверьте размер, плотность и рабочий метраж.';return null;}
+    const dims=readProductDimensions(),area=garmentArea(g,dims);
+    if(!(area>0)){els.productValidation.textContent='Проверьте размеры изделия в сантиметрах.';return null;}
     els.productValidation.textContent='';
-    const mult=interpolateMap(D.gaugeMultipliers,gauge),requiredMeters=size.base*mult,rawGrams=requiredMeters/meterage*100,reserveGrams=rawGrams*(1+D.reserve),range=meterRangeForGauge(gauge);
+    const range=meterRangeForGauge(clamp(gauge,8,30));
+    const hasSampleWeight=!!(state.sample&&state.sample.gramsPer100cm2);
+    const sampleGaugeMatches=hasSampleWeight&&Math.abs(state.sample.afterGauge-gauge)/gauge<=.04;
+    const sampleMeterageMatches=hasSampleWeight&&state.mix&&Math.abs(state.mix.combinedMeterage-meterage)/meterage<=.04;
+    let requiredMeters,rawGrams,method,metersPer100cm2;
+    if(hasSampleWeight&&sampleGaugeMatches&&sampleMeterageMatches){
+      rawGrams=area*(state.sample.gramsPer100cm2/100);
+      requiredMeters=rawGrams/100*meterage;
+      metersPer100cm2=requiredMeters/area*100;
+      method='sample';
+    }else{
+      metersPer100cm2=estimateMetersPer100cm2(gauge,rowGauge);
+      requiredMeters=area/100*metersPer100cm2;
+      rawGrams=requiredMeters/meterage*100;
+      method='geometry';
+    }
+    const reserveGrams=rawGrams*(1+D.reserve),reserveMeters=requiredMeters*(1+D.reserve);
     let compat='good';
     if(meterage<range[0]*.65||meterage>range[1]*1.4)compat='bad';else if(meterage<range[0]*.85||meterage>range[1]*1.15)compat='warn';
-    state.product={garment:g,size,gauge,rowGauge,meterage,requiredMeters,rawGrams,reserveGrams,range,compat};
+    state.product={garment:g,size,gauge,rowGauge,meterage,dims,area,metersPer100cm2,requiredMeters,requiredMetersWithReserve:reserveMeters,rawGrams,reserveGrams,range,compat,method};
     renderProductResult(state.product);renderMatches();return state.product;
   }
 
@@ -270,9 +400,12 @@
 
   function renderProductResult(r){
     els.productResultCard.hidden=false;els.productResultTitle.textContent=`${r.garment.name} · ${r.size.label}`;
-    els.productResultGrams.textContent=fmt(Math.ceil(r.reserveGrams/5)*5);els.productResultMeters.textContent=`≈ ${fmt(r.requiredMeters)} м`;els.productResultMeterage.textContent=`≈ ${fmt(r.meterage)} м/100 г`;els.productResultRawGrams.textContent=`≈ ${fmt(r.rawGrams)} г`;els.productResultReserve.textContent=`${Math.round(D.reserve*100)}%`;
+    els.productResultGrams.textContent=fmt(Math.ceil(r.reserveGrams/5)*5);els.productResultMeters.textContent=`≈ ${fmt(r.requiredMetersWithReserve)} м`;els.productResultMeterage.textContent=`≈ ${fmt(r.meterage)} м/100 г`;els.productResultRawGrams.textContent=`≈ ${fmt(r.rawGrams)} г`;els.productResultReserve.textContent=`${Math.round(D.reserve*100)}%`;
     const label=compatibilityCopy(r);els.compatBadge.textContent=label[0];els.compatBadge.className='compat-badge '+label[1];
-    els.productResultNote.textContent=`При плотности ${fmt(r.gauge,1)} п./10 см ориентир по толщине — ${fmt(r.range[0])}–${fmt(r.range[1])} м/100 г. В расчёте используется рабочий метраж ${fmt(r.meterage)} м/100 г. Узоры, резинки, косы и дополнительные детали могут изменить фактический расход.`;
+    const methodText=r.method==='sample'
+      ?`Расход рассчитан по фактическому весу образца после пересчёта на площадь изделия.`
+      :`Вес образца не использован: расход рассчитан геометрически по площади изделия и плотности петель/рядов (модель лицевой глади).`;
+    els.productResultNote.textContent=`Площадь расчётной модели ≈ ${fmt(r.area)} см². ${methodText} В результат уже добавлен запас ${Math.round(D.reserve*100)}%. Узоры, косы, резинки, планки и декоративные детали, которых нет в образце, могут изменить расход.`;
     els.productResultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
 
@@ -291,9 +424,9 @@
   function renderMatches(){
     if(!state.product){els.matchEmpty.hidden=false;els.matchContent.hidden=true;return;}
     els.matchEmpty.hidden=true;els.matchContent.hidden=false;
-    const r=state.product;els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>${escapeHtml(r.garment.name)} · ${escapeHtml(r.size.label)}</h3><p>Нужно ≈ ${fmt(r.requiredMeters)} м готовой нити. Целевой рабочий метраж: ${fmt(r.meterage)} м/100 г; ориентир для плотности — ${fmt(r.range[0])}–${fmt(r.range[1])} м/100 г.</p></div>`;
+    const r=state.product;els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>${escapeHtml(r.garment.name)} · ${escapeHtml(r.size.label)}</h3><p>Нужно ≈ ${fmt(r.requiredMetersWithReserve||r.requiredMeters)} м готовой нити с запасом. Целевой рабочий метраж: ${fmt(r.meterage)} м/100 г; ориентир для плотности — ${fmt(r.range[0])}–${fmt(r.range[1])} м/100 г.</p></div>`;
     const target=r.meterage;
-    const rows=state.vkCatalog.map(p=>{const b=scoreProduct(p,target);if(!b)return null;const needRaw=r.requiredMeters/b.effective*100;const need=Math.ceil(needRaw*(1+D.reserve)/5)*5;const stockPenalty=p.stockGrams!=null&&p.stockGrams<need?0.35:0;return{p,b:{...b,needGrams:need},score:b.distance+stockPenalty};}).filter(Boolean).sort((a,b)=>a.score-b.score).slice(0,12);
+    const rows=state.vkCatalog.map(p=>{const b=scoreProduct(p,target);if(!b)return null;const needRaw=(r.requiredMetersWithReserve||r.requiredMeters)/b.effective*100;const need=Math.ceil(needRaw/5)*5;const stockPenalty=p.stockGrams!=null&&p.stockGrams<need?0.35:0;return{p,b:{...b,needGrams:need},score:b.distance+stockPenalty};}).filter(Boolean).sort((a,b)=>a.score-b.score).slice(0,12);
     els.matchGrid.innerHTML=rows.length?rows.map(x=>productCard(x.p,x.b)).join(''):`<div class="empty-state"><h3>Подходящих данных пока нет</h3><p>В каталоге нет фотографий с меткой #Калькулятор и распознанным метражом либо каталог ещё не обновлён.</p></div>`;
   }
 
@@ -332,7 +465,7 @@
 
   function copyProduct(){
     if(!state.product)return;const r=state.product;
-    const text=`Мания пряжи — ориентировочный расчёт\n${r.garment.name}, ${r.size.label}\nПлотность: ${fmt(r.gauge,1)} п./10 см${r.rowGauge?`\nРяды: ${fmt(r.rowGauge,1)} р./10 см`:''}\nРабочий метраж: ${fmt(r.meterage)} м/100 г\nНужно: ≈ ${fmt(r.requiredMeters)} м\nВес с запасом: ≈ ${fmt(Math.ceil(r.reserveGrams/5)*5)} г`;
+    const text=`Мания пряжи — ориентировочный расчёт\n${r.garment.name}, ${r.size.label}\nПлотность: ${fmt(r.gauge,1)} п./10 см${r.rowGauge?`\nРяды: ${fmt(r.rowGauge,1)} р./10 см`:''}\nРабочий метраж: ${fmt(r.meterage)} м/100 г\nНужно с запасом: ≈ ${fmt(r.requiredMetersWithReserve||r.requiredMeters)} м\nВес с запасом: ≈ ${fmt(Math.ceil(r.reserveGrams/5)*5)} г`;
     if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(text).then(()=>showToast('Результат скопирован')).catch(()=>fallbackCopy(text));else fallbackCopy(text);
   }
   function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');showToast('Результат скопирован');}catch(_){showToast('Не удалось скопировать');}ta.remove();}
@@ -348,8 +481,9 @@
   els.yarnComponents.addEventListener('click',e=>{const b=e.target.closest('[data-remove-yarn]');if(!b)return;removeYarnPreservePosition(b);});
   $('#calculateSampleBtn').addEventListener('click',calculateSample);els.resetSampleBtn.addEventListener('click',resetSampleCalculator);
   els.useSampleBtn.addEventListener('click',applySampleToProduct);els.pullSampleBtn.addEventListener('click',applySampleToProduct);
-  els.garmentGrid.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b)return;state.garmentId=b.dataset.id;state.sizeIndex=Math.min(3,garment().sizes.length-1);renderGarments();renderSizes();els.productResultCard.hidden=true;state.product=null;renderMatches();});
-  els.sizeChips.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;state.sizeIndex=Number(b.dataset.i);renderSizes();els.productResultCard.hidden=true;state.product=null;renderMatches();});
+  els.garmentGrid.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b)return;state.garmentId=b.dataset.id;state.sizeIndex=Math.min(3,garment().sizes.length-1);state.productDims=null;renderGarments();renderSizes();els.productResultCard.hidden=true;state.product=null;renderMatches();});
+  els.sizeChips.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;state.sizeIndex=Number(b.dataset.i);state.productDims=null;renderSizes();els.productResultCard.hidden=true;state.product=null;renderMatches();});
+  els.productDimensionsFields.addEventListener('input',()=>{readProductDimensions();updateDimensionSummary();els.productResultCard.hidden=true;state.product=null;renderMatches();});
   els.productGauge.addEventListener('input',updateGaugeHint);
   $('#calculateProductBtn').addEventListener('click',calculateProduct);
   $('#goMatchBtn').addEventListener('click',()=>switchView('match'));$('#copyProductBtn').addEventListener('click',copyProduct);
