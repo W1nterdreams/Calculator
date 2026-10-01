@@ -314,3 +314,17 @@ body{
 @media(max-width:1024px){.brand-logo-img{width:260px;max-height:86px}.consent-brand{max-height:150px}}
 @media(max-width:760px){.brand-logo-img{width:220px;max-height:72px}.consent-brand{max-height:118px}}
 @media(max-width:520px){.brand-logo-img{width:184px;max-height:60px}.consent-brand{max-height:92px}}
+
+/* accurate01 — product dimensions and optional sample weight */
+.optional-mark{display:inline-block;margin-left:6px;padding:3px 7px;border-radius:999px;background:#f1ebfb;color:#7859aa;font-size:10px;font-style:normal;font-weight:800;vertical-align:1px}
+.field-help{display:block;margin:6px 2px 0;color:#80748f;font-size:11px;line-height:1.35}
+.dimension-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dimension-field{min-width:0}
+.dimension-field input[readonly]{background:#f6f2fb;color:#705d86;cursor:default}
+.dimension-summary{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding:13px 15px;border:1px solid #e4d8f5;border-radius:16px;background:linear-gradient(135deg,#f6f0ff,#fbf9ff);color:#65567b}
+.dimension-summary span{font-size:12px;font-weight:700}
+.dimension-summary strong{font-size:19px;color:#5a2fc2}
+.dimension-summary small{margin-left:auto;color:#81758f;font-size:11px}
+@media(max-width:900px){.dimension-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.dimension-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dimension-summary small{width:100%;margin-left:0}}
+@media(max-width:390px){.dimension-grid{grid-template-columns:1fr}}
