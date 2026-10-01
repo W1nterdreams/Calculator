@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="description" content="Калькулятор образца, изделия и подбора пряжи сообщества «Мания пряжи».">
+  <title>Калькулятор пряжи — Мания пряжи</title>
+  <link rel="icon" href="assets/calculator-icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/calculator-icon.png">
+  <link rel="stylesheet" href="assets/styles.css?v=20261001-rebuild06">
+</head>
+<body>
+  <svg class="svg-defs" aria-hidden="true" width="0" height="0">
+    <defs>
+      <symbol id="i-pullover" viewBox="0 0 64 64"><path d="M18 13 28 8h8l10 5 11 13-9 7-5-7v28H21V26l-5 7-9-7 11-13Z"/><path d="M27 9c1 5 9 5 10 0"/></symbol>
+      <symbol id="i-cardigan" viewBox="0 0 64 64"><path d="M18 13 28 8h8l10 5 11 13-9 7-5-7v28H21V26l-5 7-9-7 11-13Z"/><path d="M32 9v45M27 9c1 5 9 5 10 0"/><circle cx="36" cy="25" r="1.2"/><circle cx="36" cy="33" r="1.2"/><circle cx="36" cy="41" r="1.2"/></symbol>
+      <symbol id="i-vest" viewBox="0 0 64 64"><path d="M18 15 27 8h10l9 7-6 11v28H24V26l-6-11Z"/><path d="M27 9c1 5 9 5 10 0M24 27c-7-2-8-8-6-12M40 27c7-2 8-8 6-12"/></symbol>
+      <symbol id="i-socks" viewBox="0 0 64 64"><path d="M16 8h15v27c0 7-7 9-12 12-6 3-12 0-12-5 0-4 4-6 9-8V8Zm27 0h14v28c0 7-7 9-12 12-6 3-12 0-12-5 0-4 4-6 10-8V8Z"/></symbol>
+      <symbol id="i-hat" viewBox="0 0 64 64"><path d="M14 39c0-17 7-27 18-27s18 10 18 27H14Z"/><path d="M11 39h42v10H11z"/><circle cx="32" cy="9" r="5"/></symbol>
+      <symbol id="i-scarf" viewBox="0 0 64 64"><path d="M18 7h28v40H18z"/><path d="M18 47v9m7-9v9m7-9v9m7-9v9m7-9v9"/></symbol>
+      <symbol id="i-shawl" viewBox="0 0 64 64"><path d="M7 18c17 2 33 2 50 0L32 54 7 18Z"/><path d="M12 22 32 48l20-26M17 25l-3 5m9 2-3 5m9 2-3 5m20-19 3 5m-9 2 3 5m-9 2 3 5"/></symbol>
+      <symbol id="i-mittens" viewBox="0 0 64 64"><path d="M19 18c0-8 10-8 10 0v7c3-4 8-2 8 3v17c0 8-6 12-13 12S12 52 12 45V28c0-5 7-7 8-2l-1-8Zm26 0c0-8 10-8 10 0v7c3-4 7-2 7 3v17c0 8-5 12-12 12s-12-5-12-12V28c0-5 7-7 8-2l-1-8Z"/></symbol>
+      <symbol id="i-blanket" viewBox="0 0 64 64"><rect x="8" y="10" width="48" height="42" rx="5"/><path d="M8 21h48M19 10v42m13-42v42m13-42v42M10 52v6m8-6v6m8-6v6m8-6v6m8-6v6"/></symbol>
+      <symbol id="i-yarn" viewBox="0 0 64 64"><circle cx="31" cy="31" r="22"/><path d="M16 17c12 3 22 13 28 28M14 30c14-6 27-6 39 1M18 47c8-13 18-24 31-31M42 49c8 0 13 4 13 9"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 64 64"><path d="m32 5 5 17 17 5-17 5-5 17-5-17-17-5 17-5 5-17Z"/><path d="m50 42 2 7 7 2-7 2-2 7-2-7-7-2 7-2 2-7Z"/></symbol>
+    </defs>
+  </svg>
+
+  <section class="consent-screen" id="consentScreen" aria-labelledby="consentTitle">
+    <div class="consent-card">
+      <div class="consent-brand-row" aria-hidden="true">
+        <img class="consent-brand" src="assets/brand-logo-violet.svg" alt="">
+        <img class="consent-app-icon" src="assets/calculator-icon.png" alt="">
+      </div>
+      <span class="eyebrow">Перед началом расчёта</span>
+      <h1 id="consentTitle">Важно знать</h1>
+      <p>Расчёты расхода пряжи и рекомендации основаны на ориентировочных данных и сведениях из открытых источников.</p>
+      <div class="consent-points">
+        <div><span>1</span><p>Узоры, косы, резинки и высокая плотность вязания могут увеличить расход.</p></div>
+        <div><span>2</span><p>Воротники, планки, карманы, капюшоны и другие дополнительные детали требуют дополнительной пряжи.</p></div>
+        <div><span>3</span><p>Фактический проект может потребовать как больше, так и меньше пряжи, чем показывает расчёт.</p></div>
+      </div>
+      <p class="consent-note">Используйте результат как ориентир и по возможности проверяйте его на своём образце.</p>
+      <button class="primary-btn consent-btn" id="consentBtn" type="button">Согласен, продолжить</button>
+    </div>
+  </section>
+
+  <div class="app-shell is-locked" id="app" aria-hidden="true">
+    <header class="brand-header">
+      <img class="brand-logo-img" src="assets/brand-logo-violet.svg" alt="Мания пряжи">
+      <div class="brand-copy"><div class="brand-subtitle">Калькулятор пряжи</div></div>
+      <div class="vk-state" id="vkState" title="Состояние каталога VK"><span class="dot"></span><span>Каталог</span></div>
+    </header>
+
+    <nav class="tabs" aria-label="Разделы приложения">
+      <button class="tab is-active" type="button" data-view="sample">Калькулятор образца</button>
+      <button class="tab" type="button" data-view="product">Калькулятор изделия</button>
+      <button class="tab" type="button" data-view="match">Подбор пряжи</button>
+    </nav>
+
+    <main>
+      <section class="view is-active" id="view-sample">
+        <div class="hero-card">
+          <div>
+            <span class="eyebrow">Шаг 1</span>
+            <h1>Калькулятор образца</h1>
+            <p>Соберите рабочую нить, внесите измерения образца до и после ВТО и получите фактическую плотность.</p>
+          </div>
+          <div class="hero-yarn" aria-hidden="true"><img class="hero-app-icon" src="assets/calculator-icon.png" alt=""></div>
+        </div>
+
+        <section class="step-card">
+          <div class="step-title"><span>1</span><div><h2>Рабочая нить</h2><p>Можно объединить до пяти разных видов пряжи. Для каждой укажите метраж, число нитей и до шести компонентов состава.</p></div></div>
+          <div class="yarn-components" id="yarnComponents"></div>
+          <button class="ghost-btn add-yarn-btn" id="addYarnBtn" type="button">+ Добавить нить</button>
+          <div class="mix-result" id="mixResult" aria-live="polite"></div>
+        </section>
+
+        <section class="sample-grid">
+          <div class="step-card">
+            <div class="step-title"><span>2</span><div><h2>До ВТО</h2><p>Измерьте связанный образец до влажно-тепловой обработки.</p></div></div>
+            <div class="field-grid two">
+              <label class="field"><span>Количество петель</span><input id="beforeStitches" type="number" min="1" step="1" placeholder="—" inputmode="numeric"></label>
+              <label class="field"><span>Количество рядов</span><input id="beforeRows" type="number" min="1" step="1" placeholder="—" inputmode="numeric"></label>
+              <label class="field"><span>Ширина</span><div class="input-unit"><input id="beforeWidth" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
+              <label class="field"><span>Высота</span><div class="input-unit"><input id="beforeHeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
+              <label class="field full"><span>Вес образца</span><div class="input-unit"><input id="sampleWeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>г</b></div></label>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-title"><span>3</span><div><h2>После ВТО</h2><p>Петли и ряды остаются теми же — повторно измерьте только размер образца.</p></div></div>
+            <div class="field-grid two">
+              <label class="field"><span>Ширина</span><div class="input-unit"><input id="afterWidth" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
+              <label class="field"><span>Высота</span><div class="input-unit"><input id="afterHeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
+            </div>
+            <div class="after-note">Вес после ВТО не требуется.</div>
+          </div>
+        </section>
+
+        <div class="sample-action-row">
+          <button class="primary-btn" id="calculateSampleBtn" type="button">Рассчитать образец</button>
+          <button class="ghost-btn reset-btn" id="resetSampleBtn" type="button">Сбросить расчёт</button>
+        </div>
+        <div class="validation" id="sampleValidation" role="alert" aria-live="polite"></div>
+
+        <section class="result-card" id="sampleResultCard" hidden aria-live="polite">
+          <div class="result-top"><div><span class="eyebrow">Результат образца</span><h2>Изменения после ВТО</h2></div><div class="compat-badge good">Плотность рассчитана</div></div>
+          <div class="sample-results">
+            <div class="result-panel"><span>Плотность до ВТО</span><b id="beforeGaugeResult">—</b><small id="beforeRowsResult">—</small></div>
+            <div class="result-panel strong"><span>Плотность после ВТО</span><b id="afterGaugeResult">—</b><small id="afterRowsResult">—</small></div>
+            <div class="result-panel"><span>Изменение ширины</span><b id="widthChangeResult">—</b><small id="widthChangeText">—</small></div>
+            <div class="result-panel"><span>Изменение высоты</span><b id="heightChangeResult">—</b><small id="heightChangeText">—</small></div>
+            <div class="result-panel"><span>Расход по площади</span><b id="areaConsumptionResult">—</b><small>по размеру после ВТО</small></div>
+            <div class="result-panel"><span>Рабочая нить</span><b id="sampleMeterageResult">—</b><small id="sampleMetersUsedResult">—</small></div>
+          </div>
+          <div class="result-actions"><button class="secondary-btn" id="useSampleBtn" type="button">Передать данные в изделие</button></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-product">
+        <div class="section-head"><div><span class="eyebrow">Шаг 2</span><h1>Калькулятор изделия</h1><p>Используйте параметры своего образца или введите плотность и рабочий метраж вручную.</p></div></div>
+
+        <section class="step-card transfer-card">
+          <div><h2>Данные образца</h2><p id="sampleTransferStatus">Можно внести значения вручную.</p></div>
+          <button class="secondary-btn" id="pullSampleBtn" type="button">Взять из образца</button>
+        </section>
+
+        <section class="step-card">
+          <div class="step-title"><span>1</span><div><h2>Изделие</h2><p>Выберите тип изделия.</p></div></div>
+          <div class="garment-grid" id="garmentGrid"></div>
+        </section>
+
+        <section class="step-card">
+          <div class="step-title"><span>2</span><div><h2>Размер</h2><p id="sizeHint">Выберите изделие, чтобы увидеть доступные размеры.</p></div></div>
+          <div class="chip-row" id="sizeChips"></div>
+        </section>
+
+        <section class="step-card compact-grid">
+          <div class="input-block">
+            <div class="step-title small"><span>3</span><div><h2>Плотность</h2><p>Фактическое количество петель в 10 см после ВТО.</p></div></div>
+            <div class="number-with-unit wide"><input id="productGauge" type="number" min="8" max="30" step="0.1" value="20" inputmode="decimal"><span>п./10 см</span></div>
+            <label class="mini-field"><span>Ряды (справочно)</span><div class="input-unit"><input id="productRowGauge" type="number" min="1" step="0.1" inputmode="decimal" placeholder="необязательно"><b>р./10 см</b></div></label>
+            <div class="meter-hint" id="gaugeHint"></div>
+          </div>
+          <div class="input-block">
+            <div class="step-title small"><span>4</span><div><h2>Рабочий метраж</h2><p>Метраж уже готовой нити, которой будет связано изделие.</p></div></div>
+            <div class="number-with-unit wide"><input id="productMeterage" type="number" min="1" step="1" value="280" inputmode="decimal"><span>м/100 г</span></div>
+            <p class="input-footnote">Если вы соединяете несколько нитей, итоговый метраж можно рассчитать во вкладке «Образец».</p>
+          </div>
+        </section>
+
+        <button class="primary-btn" id="calculateProductBtn" type="button">Рассчитать расход</button>
+        <div class="validation" id="productValidation" role="alert" aria-live="polite"></div>
+
+        <section class="result-card" id="productResultCard" hidden aria-live="polite">
+          <div class="result-top"><div><span class="eyebrow">Ориентировочный расчёт</span><h2 id="productResultTitle">—</h2></div><div class="compat-badge" id="compatBadge">—</div></div>
+          <div class="result-main">
+            <div class="big-number"><strong id="productResultGrams">—</strong><span>г с запасом</span></div>
+            <div class="result-facts">
+              <div><span>Расход готовой нити</span><b id="productResultMeters">—</b></div>
+              <div><span>Рабочий метраж</span><b id="productResultMeterage">—</b></div>
+              <div><span>Без запаса</span><b id="productResultRawGrams">—</b></div>
+              <div><span>Запас</span><b id="productResultReserve">10%</b></div>
+            </div>
+          </div>
+          <p class="result-note" id="productResultNote"></p>
+          <div class="result-actions"><button class="secondary-btn" id="goMatchBtn" type="button">Подобрать пряжу</button><button class="ghost-btn" id="copyProductBtn" type="button">Скопировать результат</button></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-match">
+        <div class="section-head match-head"><div><span class="eyebrow">Шаг 3</span><h1>Подбор пряжи</h1><p>Каталог формируется автоматически из отмеченных фотографий VK. Сейчас используется тестовый альбом и метка <b>#Калькулятор</b>.</p></div><button class="ghost-btn tiny" id="refreshCatalogBtn" type="button">Обновить каталог</button></div>
+        <div class="catalog-status" id="catalogStatus" aria-live="polite"><span class="status-dot"></span><span>Каталог ещё не загружен.</span></div>
+
+        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Сначала рассчитайте изделие</h3><p>После расчёта здесь появятся позиции из каталога, близкие по рабочему метражу.</p><button class="secondary-btn" type="button" data-go="product">Перейти к изделию</button></div>
+        <div id="matchContent" hidden>
+          <div class="match-summary" id="matchSummary"></div>
+          <div class="product-grid" id="matchGrid"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer"><span>Мания пряжи · Великий Новгород</span><span>Результаты расчёта ориентировочные.</span></footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js"></script>
+  <script src="js/config.js?v=20261001-rebuild05"></script>
+  <script src="js/data.js?v=20261001-rebuild05"></script>
+  <script src="js/parser.js?v=20261001-rebuild05"></script>
+  <script src="js/vk-catalog.js?v=20261001-rebuild05"></script>
+  <script src="js/app.js?v=20261001-rebuild05"></script>
+</body>
+</html>
