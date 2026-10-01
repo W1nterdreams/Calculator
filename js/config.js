@@ -11,6 +11,6 @@
     DB_NAME:'mania-yarn-vk-catalog',
     DB_VERSION:1,
     DB_STORE:'catalog',
-    DB_KEY:'group-173909287-album-310875173-calculator-v1'
+    DB_KEY:'group-173909287-album-310875173-calculator-v2'
   };
 })();
