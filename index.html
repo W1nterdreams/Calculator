@@ -7,7 +7,7 @@
   <meta name="description" content="Калькулятор расхода пряжи сообщества «Мания пряжи»: изделие, размер, плотность, метраж и сложения.">
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/styles.css?v=20261001-vk19-01">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -130,8 +130,19 @@
           <div class="parsed-preview" id="parsedPreview"></div>
         </section>
 
-        <div class="catalog-toolbar"><h2>Тестовый каталог</h2><div><span id="catalogCount"></span><button class="ghost-btn tiny" id="resetCatalogBtn" type="button">Сбросить демо</button></div></div>
+        <section class="vk-catalog-box">
+          <div class="vk-catalog-copy">
+            <span class="eyebrow">Живой каталог группы</span>
+            <h2>19 альбомов «Мании пряжи»</h2>
+            <p>Калькулятор читает описания фотографий только из заданного списка альбомов группы и использует распознанный метраж для подбора.</p>
+          </div>
+          <button class="secondary-btn vk-sync-btn" id="syncVkCatalogBtn" type="button">Обновить из VK</button>
+          <div class="vk-sync-status" id="vkCatalogStatus" aria-live="polite">Проверяем локальный кэш…</div>
+        </section>
+
+        <div class="catalog-toolbar"><h2>Каталог</h2><div><span id="catalogCount"></span><button class="ghost-btn tiny" id="resetCatalogBtn" type="button">Сбросить локальные</button></div></div>
         <div class="product-grid" id="catalogGrid"></div>
+        <button class="ghost-btn catalog-more" id="showMoreCatalogBtn" type="button" hidden>Показать ещё</button>
       </section>
     </main>
 
@@ -139,8 +150,10 @@
   </div>
 
   <script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/parser.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/config.js?v=20261001-vk19-01"></script>
+  <script src="js/data.js?v=20261001-vk19-01"></script>
+  <script src="js/parser.js?v=20261001-vk19-01"></script>
+  <script src="js/vk-catalog.js?v=20261001-vk19-01"></script>
+  <script src="js/app.js?v=20261001-vk19-01"></script>
 </body>
 </html>
