@@ -36,7 +36,7 @@
     let stats='';if(mode==='match'&&match){stats=`<div class="product-stats"><div><span>Лучшее сложение</span><b>${match.plies}</b></div><div><span>Рабочий метраж</span><b>${fmt(match.effective)} м/100 г</b></div><div><span>Нужно с запасом</span><b>${fmt(match.needGrams)} г</b></div><div><span>Наличие</span><b>${p.stockGrams==null?'не указано':fmt(p.stockGrams)+' г'}</b></div>${p.pricePer100g?`<div><span>Ориентир цены</span><b>≈ ${fmt(match.needGrams/100*p.pricePer100g)} ₽</b></div>`:''}</div>`}
     const action=p.photoUrl?`<button class="card-action" data-open="${encodeURIComponent(p.photoUrl)}">Открыть фото VK</button>`:`<button class="card-action" disabled>Фото VK не привязано</button>`;
     const visual=p.thumbUrl?`<img class="product-thumb" src="${escapeHtml(p.thumbUrl)}" alt="" loading="lazy" decoding="async">`:`<div class="yarn-swatch"></div>`;
-    const source=p.source==='vk'?'<span class="source-badge">VK · 19 альбомов</span>':'<span class="source-badge local">локально</span>';
+    const source=p.source==='vk'?'<span class="source-badge">VK · тестовый альбом</span>':'<span class="source-badge local">локально</span>';
     return `<article class="product-card"><div class="product-card-top">${visual}<div><h3>${escapeHtml(productTitle(p))}</h3><div class="meta">${escapeHtml(meta||'Описание из каталога')}</div>${source}</div></div><div class="tag-row">${tags.slice(0,5).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}${p.stockGrams!=null?`<span class="tag good">в наличии ${fmt(p.stockGrams)} г</span>`:''}</div>${stats}${action}</article>`;
   }
   function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]))}
@@ -66,7 +66,7 @@
     if(cached&&Array.isArray(cached.items)){
       state.vkCatalog=cached.items;state.vkMeta=cached;state.catalogRenderLimit=60;renderCatalog();renderMatches();
       const when=formatSyncTime(cached.syncedAt);const errors=Array.isArray(cached.errors)?cached.errors.length:0;
-      setVkCatalogStatus(`Кэш VK: ${cached.items.length} описаний, ${cached.parsedWithMeterage||0} с метражом${when?' · '+when:''}${errors?' · ошибок альбомов: '+errors:''}.`,'ok');
+      setVkCatalogStatus(`Кэш VK: ${cached.items.length} фото с #Калькулятор, ${cached.parsedWithMeterage||0} с метражом${when?' · '+when:''}${errors?' · ошибок: '+errors:''}.`,'ok');
     }else setVkCatalogStatus('Каталог VK ещё не загружен. Нажмите «Обновить из VK».');
   }
   async function syncVkCatalog(){
@@ -76,7 +76,7 @@
       const payload=await VKCAT.sync({onProgress:x=>setVkCatalogStatus(x.message||'Загрузка…')});
       state.vkCatalog=Array.isArray(payload.items)?payload.items:[];state.vkMeta=payload;state.catalogRenderLimit=60;renderCatalog();renderMatches();
       const errors=Array.isArray(payload.errors)?payload.errors.length:0;
-      setVkCatalogStatus(`Готово: ${payload.items.length} описаний из 19 альбомов, ${payload.parsedWithMeterage||0} с распознанным метражом${errors?' · ошибок альбомов: '+errors:''}.`,'ok');
+      setVkCatalogStatus(`Готово: ${payload.items.length} фото с #Калькулятор из тестового альбома, ${payload.parsedWithMeterage||0} с распознанным метражом${errors?' · ошибок: '+errors:''}.`,'ok');
     }catch(error){
       console.error('VK catalog sync failed:',error);
       setVkCatalogStatus(`Не удалось обновить каталог: ${error?.error_msg||error?.message||String(error)}`,'error');
