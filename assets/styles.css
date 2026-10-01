@@ -22,3 +22,64 @@
 @media(max-width:760px){.brand-logo-img{width:134px}.brand-copy{display:none}.hero-card{grid-template-columns:1fr 66px;padding:14px 16px;min-height:104px}.hero-app-icon{width:60px;height:60px;border-radius:17px}.hero-card h1{font-size:24px}.hero-card p{font-size:11.5px}.composition-pairs{grid-template-columns:repeat(2,minmax(0,1fr))}.composition-pair{grid-template-columns:54px minmax(0,1fr)}}
 @media(max-width:520px){.brand-header{padding-top:4px}.brand-logo-img{width:122px;max-height:48px}.hero-card{grid-template-columns:1fr 54px;padding:12px 14px;min-height:92px}.hero-app-icon{width:50px;height:50px;border-radius:14px}.hero-card h1{font-size:21px;margin:3px 0 4px}.hero-card p{font-size:11px;line-height:1.32}.composition-pairs{grid-template-columns:1fr 1fr;gap:6px}.composition-pair{grid-template-columns:48px minmax(0,1fr)}.composition-pair input{height:38px;padding:7px 6px}.material-input{font-size:11px}.sample-action-row{grid-template-columns:1fr}.sample-action-row .reset-btn{min-width:0}.consent-brand{width:160px}.consent-app-icon{width:58px;height:58px}}
 
+
+/* rebuild05 — composition layout, compact unified step headers, redesigned brand */
+.brand-header{margin-bottom:10px;padding:9px 14px;border:1px solid #e5d8fb;border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(245,238,255,.96));box-shadow:0 8px 22px rgba(76,35,135,.08);overflow:hidden;position:relative}
+.brand-header:after{content:"";position:absolute;right:-45px;top:-70px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,#d9c1ff 0,#eee5ff 45%,transparent 72%);pointer-events:none}
+.brand-logo-img{width:190px;height:auto;max-height:62px;object-fit:contain;object-position:left center;position:relative;z-index:1}
+.brand-subtitle{font-weight:800;color:#6f5b88}
+.vk-state{position:relative;z-index:1}
+.consent-brand{width:230px;height:auto;max-height:82px;object-fit:contain;border-radius:0}
+
+/* Six fibre components: exactly two rows of three. */
+.composition-pairs{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 7px}
+.composition-pair{grid-template-columns:52px minmax(0,1fr);gap:5px}
+.percent-input input{padding-right:17px;text-align:center;font-variant-numeric:tabular-nums}
+.percent-input span{right:5px}
+.composition-heading label{font-weight:800;color:#5f5271}
+
+/* All three top step headings use the same framed card language. */
+.hero-card,.section-head{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero-card{grid-template-columns:1fr 62px;gap:12px;padding:14px 18px;min-height:94px}
+.hero-card:before,.section-head:before{content:"";position:absolute;width:125px;height:125px;border-radius:50%;right:-52px;top:-70px;background:#efe3ff;pointer-events:none}
+.hero-card>*,.section-head>*{position:relative;z-index:1}
+.hero-card h1,.section-head h1{font-size:25px;line-height:1.08;letter-spacing:-.6px;margin:4px 0 5px}
+.hero-card p,.section-head p{font-size:12px;line-height:1.4}
+.hero-app-icon{width:56px;height:56px;border-radius:16px}
+.section-head{padding:14px 18px;margin:0 0 16px;align-items:center;min-height:94px}
+.section-head.match-head{align-items:center}
+.section-head .ghost-btn{position:relative;z-index:2}
+
+@media(max-width:760px){
+  .brand-logo-img{width:168px;max-height:56px}
+  .hero-card,.section-head{min-height:86px;padding:12px 14px}
+  .hero-card{grid-template-columns:1fr 52px}
+  .hero-app-icon{width:48px;height:48px;border-radius:14px}
+  .hero-card h1,.section-head h1{font-size:22px}
+  .composition-pairs{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px 5px}
+  .composition-pair{grid-template-columns:43px minmax(0,1fr);gap:4px}
+  .composition-pair input{height:38px;padding:6px 5px}
+  .percent-input input{padding-right:14px}
+  .percent-input span{right:3px;font-size:9px}
+  .material-input{font-size:10.5px}
+}
+@media(max-width:520px){
+  .brand-header{padding:7px 10px;margin-bottom:8px}
+  .brand-logo-img{width:154px;max-height:50px}
+  .consent-brand{width:190px;max-height:70px}
+  .hero-card,.section-head{min-height:80px;padding:10px 12px;border-radius:18px}
+  .hero-card{grid-template-columns:1fr 46px}
+  .hero-app-icon{width:43px;height:43px;border-radius:13px}
+  .hero-card h1,.section-head h1{font-size:20px;margin:2px 0 3px}
+  .hero-card p,.section-head p{font-size:10.8px;line-height:1.32}
+  .section-head.match-head{display:grid;grid-template-columns:1fr auto;gap:8px}
+  .section-head .ghost-btn{min-height:36px;padding:7px 9px;font-size:10px}
+  .composition-pairs{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 4px}
+  .composition-pair{grid-template-columns:40px minmax(0,1fr);gap:3px}
+  .composition-pair input{height:36px;padding:5px 4px;border-radius:9px}
+  .percent-input input{padding-right:12px;font-size:12px}
+  .percent-input span{font-size:8px;right:2px}
+  .material-input{font-size:9.7px}
+  .composition-heading{align-items:flex-start}
+  .composition-total{font-size:9.5px;padding:4px 6px}
+}
