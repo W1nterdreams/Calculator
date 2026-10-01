@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261001-rebuild06u1-logo">
+  <link rel="stylesheet" href="assets/styles.css?v=20261001-accurate01">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -85,7 +85,7 @@
               <label class="field"><span>Количество рядов</span><input id="beforeRows" type="number" min="1" step="1" placeholder="—" inputmode="numeric"></label>
               <label class="field"><span>Ширина</span><div class="input-unit"><input id="beforeWidth" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
               <label class="field"><span>Высота</span><div class="input-unit"><input id="beforeHeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
-              <label class="field full"><span>Вес образца</span><div class="input-unit"><input id="sampleWeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>г</b></div></label>
+              <label class="field full"><span>Вес образца <em class="optional-mark">необязательно</em></span><div class="input-unit"><input id="sampleWeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>г</b></div><small class="field-help">Если вес указан, расход изделия рассчитывается по фактическому расходу вашего образца. Без веса используется геометрическая оценка.</small></label>
             </div>
           </div>
 
@@ -112,7 +112,7 @@
             <div class="result-panel strong"><span>Плотность после ВТО</span><b id="afterGaugeResult">—</b><small id="afterRowsResult">—</small></div>
             <div class="result-panel"><span>Изменение ширины</span><b id="widthChangeResult">—</b><small id="widthChangeText">—</small></div>
             <div class="result-panel"><span>Изменение высоты</span><b id="heightChangeResult">—</b><small id="heightChangeText">—</small></div>
-            <div class="result-panel"><span>Расход по площади</span><b id="areaConsumptionResult">—</b><small>по размеру после ВТО</small></div>
+            <div class="result-panel"><span>Расход по площади</span><b id="areaConsumptionResult">—</b><small id="areaConsumptionHint">по размеру после ВТО</small></div>
             <div class="result-panel"><span>Рабочая нить</span><b id="sampleMeterageResult">—</b><small id="sampleMetersUsedResult">—</small></div>
           </div>
           <div class="result-actions"><button class="secondary-btn" id="useSampleBtn" type="button">Передать данные в изделие</button></div>
@@ -137,15 +137,21 @@
           <div class="chip-row" id="sizeChips"></div>
         </section>
 
+        <section class="step-card" id="productDimensionsCard">
+          <div class="step-title"><span>3</span><div><h2>Размеры расчётной модели</h2><p id="productDimensionsHint">Размеры подставляются из выбранного российского размера. Их можно уточнить в сантиметрах под конкретную модель.</p></div></div>
+          <div class="dimension-grid" id="productDimensionsFields"></div>
+          <div class="dimension-summary" id="productDimensionSummary"></div>
+        </section>
+
         <section class="step-card compact-grid">
           <div class="input-block">
-            <div class="step-title small"><span>3</span><div><h2>Плотность</h2><p>Фактическое количество петель в 10 см после ВТО.</p></div></div>
+            <div class="step-title small"><span>4</span><div><h2>Плотность</h2><p>Фактическое количество петель в 10 см после ВТО.</p></div></div>
             <div class="number-with-unit wide"><input id="productGauge" type="number" min="8" max="30" step="0.1" value="20" inputmode="decimal"><span>п./10 см</span></div>
             <label class="mini-field"><span>Ряды (справочно)</span><div class="input-unit"><input id="productRowGauge" type="number" min="1" step="0.1" inputmode="decimal" placeholder="необязательно"><b>р./10 см</b></div></label>
             <div class="meter-hint" id="gaugeHint"></div>
           </div>
           <div class="input-block">
-            <div class="step-title small"><span>4</span><div><h2>Рабочий метраж</h2><p>Метраж уже готовой нити, которой будет связано изделие.</p></div></div>
+            <div class="step-title small"><span>5</span><div><h2>Рабочий метраж</h2><p>Метраж уже готовой нити, которой будет связано изделие.</p></div></div>
             <div class="number-with-unit wide"><input id="productMeterage" type="number" min="1" step="1" value="280" inputmode="decimal"><span>м/100 г</span></div>
             <p class="input-footnote">Если вы соединяете несколько нитей, итоговый метраж можно рассчитать во вкладке «Образец».</p>
           </div>
@@ -188,10 +194,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js"></script>
-  <script src="js/config.js?v=20261001-rebuild06u1"></script>
-  <script src="js/data.js?v=20261001-rebuild06u1"></script>
-  <script src="js/parser.js?v=20261001-rebuild06u1"></script>
-  <script src="js/vk-catalog.js?v=20261001-rebuild06u1"></script>
-  <script src="js/app.js?v=20261001-rebuild06u1"></script>
+  <script src="js/config.js?v=20261001-accurate01"></script>
+  <script src="js/data.js?v=20261001-accurate01"></script>
+  <script src="js/parser.js?v=20261001-accurate01"></script>
+  <script src="js/vk-catalog.js?v=20261001-accurate01"></script>
+  <script src="js/app.js?v=20261001-accurate01"></script>
 </body>
 </html>
