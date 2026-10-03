@@ -426,3 +426,7 @@ body{
 /* match09: explicit search action */
 .match-find-btn{width:auto;min-width:180px;margin:14px 16px 16px;display:block;margin-left:auto;}
 @media(max-width:520px){.match-find-btn{width:calc(100% - 28px);margin:12px 14px 14px;}}
+
+
+/* sizes10: clearer yarn thickness compatibility message */
+.compat-badge{white-space:normal;max-width:360px;text-align:center;line-height:1.3}
