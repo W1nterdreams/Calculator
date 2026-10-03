@@ -58,7 +58,7 @@
     if(m){const price=num(m[1]),basis=num(m[2]);return{price,basisGrams:basis,pricePer100g:Math.round(price/basis*100)}}
     return null;
   }
-  function parseStock(text){const m=/(?:в\s+наличии|остаток|осталось|есть|вес)\s*[:\-–—]?\s*(\d+(?:[.,]\d+)?)\s*(кг|г|гр|грамм\w*)/i.exec(String(text||''));return m?Math.round(grams(m[1],m[2])):null;}
+  function parseStock(text){const m=/(?:наличие|в\s+наличии|остаток|осталось|есть|вес)\s*[:\-–—]?\s*(\d+(?:[.,]\d+)?)\s*(кг|г|гр|грамм\w*)/i.exec(String(text||''));return m?Math.round(grams(m[1],m[2])):null;}
   function parseColor(text){
     let m=/\bCol\.?\s*([^\.\n\r]+?)(?=\.\s|$)/i.exec(String(text||''));if(m)return clean(m[1]);
     m=/(?:цвет|цвета)\s*[:\-–—]?\s*([^\.\n\r]+)/i.exec(String(text||''));return m?clean(m[1]):null;
@@ -77,16 +77,17 @@
     const source=String(raw||'');
     const structured={
       country:field(source,['Страна']),
-      brand:field(source,['Бренд']),
-      title:field(source,['Название']),
+      brand:field(source,['Производитель','Бренд']),
+      title:field(source,['Артикул/название','Артикул / название','Название']),
       article:field(source,['Артикул','Art','Арт']),
+      shade:field(source,['Оттенок']),
       color:field(source,['Цвет','Col']),
       composition:field(source,['Состав']),
       meterage:field(source,['Метраж']),
-      stock:field(source,['Остаток','В наличии','Вес']),
+      stock:field(source,['Наличие','Остаток','В наличии','Вес']),
       price:field(source,['Цена'])
     };
-    const legacy=clean(source.replace(/^\s*#калькулятор\s*$/gim,' '));
+    const legacy=clean(source.replace(/^\s*#(?:калькулятор|манияпряжи)\s*$/gim,' '));
     const meterage=parseMeterage(structured.meterage||legacy);
     const price=parsePrice(structured.price||legacy);
     const brand=structured.brand||parseBrand(legacy);
@@ -102,6 +103,7 @@
       name:structured.title||structured.article||parseName(legacy,brand),
       article:structured.article||null,
       color:structured.color||parseColor(legacy),
+      shade:structured.shade||null,
       composition,properties,meterage,yarnCount:parseYarnCount(legacy),
       stockGrams:stockValue,
       pricePer100g:price?price.pricePer100g:null,

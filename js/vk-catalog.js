@@ -59,7 +59,7 @@
   }
   function vkPhotoUrl(photo){const owner=Number(photo?.owner_id||C.OWNER_ID||0),id=Number(photo?.id||0);return owner&&id?`https://vk.com/photo${owner}_${id}`:'';}
   function markerRegex(){
-    const marker=String(C.PARSER_MARKER||'#Калькулятор').trim();
+    const marker=String(C.PARSER_MARKER||'#Манияпряжи').trim();
     const escaped=marker.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     return new RegExp('(?:^|\\s)'+escaped+'(?=\\s|$|[.,;:!?])','iu');
   }
@@ -71,7 +71,7 @@
       const r=await api(token,'photos.getAlbums',{owner_id:Number(C.OWNER_ID),need_system:0,need_covers:0,photo_sizes:0,count:100,offset});
       const items=Array.isArray(r?.items)?r.items:[];if(total===null&&Number.isFinite(Number(r?.count)))total=Number(r.count);
       for(const a of items)if(wanted.has(Number(a?.id)))titles.set(Number(a.id),String(a.title||`Альбом ${a.id}`));
-      offset+=items.length;if(typeof onProgress==='function')onProgress({phase:'albums',message:`Определяем тестовый альбом…`});
+      offset+=items.length;if(typeof onProgress==='function')onProgress({phase:'albums',message:`Определяем разрешённый альбом…`});
       if(!items.length||(total!==null&&offset>=total)||titles.size>=wanted.size)break;
     }
     for(const id of wanted)if(!titles.has(id))titles.set(id,`Альбом ${id}`);return titles;
@@ -82,7 +82,7 @@
     await initBridge();onProgress({phase:'auth',message:'Запрашиваем доступ к фотографиям…'});const token=await getToken();
     const albumTitles=await loadAlbumTitles(token,onProgress);
     const items=[];const errors=[];let totalPhotos=0,markedPhotos=0,parsedWithMeterage=0;
-    const ids=(C.ALBUM_IDS||[]).map(Number).filter(Number.isInteger);const marker=String(C.PARSER_MARKER||'#Калькулятор');
+    const ids=(C.ALBUM_IDS||[]).map(Number).filter(Number.isInteger);const marker=String(C.PARSER_MARKER||'#Манияпряжи');
     for(let ai=0;ai<ids.length;ai++){
       const albumId=ids[ai],albumTitle=albumTitles.get(albumId)||`Альбом ${albumId}`;let offset=0,albumTotal=null;
       for(let page=0;page<Number(C.MAX_PAGES_PER_ALBUM||100);page++){
@@ -100,7 +100,7 @@
         offset+=photos.length;if(!photos.length||(albumTotal!==null&&offset>=albumTotal)||(albumTotal===null&&photos.length<Number(C.PHOTOS_PAGE_SIZE||1000)))break;
       }
     }
-    const payload={schema:2,groupId:Number(C.GROUP_ID),ownerId:Number(C.OWNER_ID),albumIds:ids,parserMarker:marker,syncedAt:Date.now(),totalPhotos,markedPhotos,parsedWithMeterage,errors,items};
+    const payload={schema:3,groupId:Number(C.GROUP_ID),ownerId:Number(C.OWNER_ID),albumIds:ids,parserMarker:marker,syncedAt:Date.now(),totalPhotos,markedPhotos,parsedWithMeterage,errors,items};
     await cacheSet(payload);onProgress({phase:'done',message:`Готово: найдено ${markedPhotos} фото с ${marker}, ${parsedWithMeterage} с метражом.`});return payload;
   }
   window.MANIA_VK_CATALOG={sync,loadCached:cacheGet,getLaunchAppId,config:C,hasParserMarker};

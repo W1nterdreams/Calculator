@@ -27,7 +27,8 @@
     product:null,
     vkCatalog:[],
     vkMeta:null,
-    catalogStarted:false
+    catalogStarted:false,
+    matchFilters:{colorEnabled:false,colors:[],compositionEnabled:false,materials:{}}
   };
 
   const els={
@@ -35,7 +36,8 @@
     yarnComponents:$('#yarnComponents'),addYarnBtn:$('#addYarnBtn'),mixResult:$('#mixResult'),resetSampleBtn:$('#resetSampleBtn'),
     sampleStitches:$('#sampleStitches'),sampleRows:$('#sampleRows'),sampleWidth:$('#sampleWidth'),sampleHeight:$('#sampleHeight'),sampleWeight:$('#sampleWeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),sampleGaugeResult:$('#sampleGaugeResult'),sampleRowsGaugeResult:$('#sampleRowsGaugeResult'),areaConsumptionResult:$('#areaConsumptionResult'),areaConsumptionHint:$('#areaConsumptionHint'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
     sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productDimensionsCard:$('#productDimensionsCard'),productDimensionsFields:$('#productDimensionsFields'),productDimensionsHint:$('#productDimensionsHint'),productDimensionSummary:$('#productDimensionSummary'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
-    refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid')
+    refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid'),
+    matchCount:$('#matchCount'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint')
   };
 
   function icon(name){return `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;}
@@ -478,23 +480,153 @@
 
   function materialText(c){return c&&c.length?c.map(x=>`${fmt(x.percent,1).replace(',0','')}% ${x.material}`).join(', '):'состав не распознан';}
   function productTitle(p){return [p.brand,p.name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' · ')||'Пряжа';}
-  function scoreProduct(p,target){if(!p.meterage||!Number(p.meterage.metersPer100g))return null;let best=null;for(let plies=1;plies<=12;plies++){const effective=p.meterage.metersPer100g/plies;const distance=Math.abs(Math.log(effective/target));if(!best||distance<best.distance)best={plies,effective,distance};}return best;}
+  function normalizeFilterText(v){return String(v||'').trim().toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ');}
+  function titleCase(v){const s=String(v||'').trim();return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+  function matchTolerance(){return Number(window.MANIA_CONFIG?.MATCH_TOLERANCE||0.10);}
+  function maxMatchPlies(){return Math.max(1,Number(window.MANIA_CONFIG?.MAX_MATCH_PLIES||6));}
+
+  function scoreProduct(p,target){
+    if(!p.meterage||!Number(p.meterage.metersPer100g)||!target)return null;
+    const raw=Number(p.meterage.metersPer100g),tol=matchTolerance();let best=null;
+    for(let plies=1;plies<=maxMatchPlies();plies++){
+      const effective=raw/plies;
+      const deviation=(effective-target)/target;
+      const absDeviation=Math.abs(deviation);
+      if(absDeviation>tol+1e-9)continue;
+      if(!best||absDeviation<best.absDeviation)best={plies,effective,deviation,absDeviation};
+    }
+    return best;
+  }
+
+  function catalogColors(){
+    const map=new Map();
+    for(const p of state.vkCatalog){
+      const raw=String(p?.color||'').trim();if(!raw)continue;
+      const key=normalizeFilterText(raw);if(!map.has(key))map.set(key,raw);
+    }
+    return [...map.entries()].map(([key,label])=>({key,label})).sort((a,b)=>a.label.localeCompare(b.label,'ru'));
+  }
+
+  function catalogMaterials(){
+    const map=new Map();
+    for(const p of state.vkCatalog){
+      for(const part of (Array.isArray(p?.composition)?p.composition:[])){
+        const raw=String(part?.material||'').trim();if(!raw)continue;
+        const key=normalizeFilterText(raw);if(!map.has(key))map.set(key,raw);
+      }
+    }
+    return [...map.entries()].map(([key,label])=>({key,label})).sort((a,b)=>a.label.localeCompare(b.label,'ru'));
+  }
+
+  function renderMatchFilterOptions(){
+    const colors=catalogColors();
+    const colorKeys=new Set(colors.map(x=>x.key));
+    state.matchFilters.colors=state.matchFilters.colors.filter(x=>colorKeys.has(x));
+    els.matchColorEnabled.checked=state.matchFilters.colorEnabled;
+    els.matchColorOptions.hidden=!state.matchFilters.colorEnabled;
+    els.matchColorHint.hidden=state.matchFilters.colorEnabled&&colors.length>0;
+    if(!colors.length){
+      els.matchColorOptions.innerHTML='<div class="filter-empty">В каталоге пока нет распознанных значений поля «Цвет».</div>';
+      els.matchColorHint.hidden=false;
+    }else{
+      els.matchColorOptions.innerHTML=colors.map(x=>`<label class="filter-chip"><input type="checkbox" data-match-color="${escapeHtml(x.key)}" ${state.matchFilters.colors.includes(x.key)?'checked':''}><span>${escapeHtml(x.label)}</span></label>`).join('');
+    }
+
+    const materials=catalogMaterials();
+    const materialKeys=new Set(materials.map(x=>x.key));
+    Object.keys(state.matchFilters.materials).forEach(k=>{if(!materialKeys.has(k))delete state.matchFilters.materials[k];});
+    els.matchCompositionEnabled.checked=state.matchFilters.compositionEnabled;
+    els.matchCompositionOptions.hidden=!state.matchFilters.compositionEnabled;
+    els.matchCompositionHint.hidden=state.matchFilters.compositionEnabled&&materials.length>0;
+    if(!materials.length){
+      els.matchCompositionOptions.innerHTML='<div class="filter-empty">В каталоге пока нет распознанного состава.</div>';
+      els.matchCompositionHint.hidden=false;
+    }else{
+      els.matchCompositionOptions.innerHTML=materials.map(x=>{
+        const selected=Object.prototype.hasOwnProperty.call(state.matchFilters.materials,x.key);
+        const min=selected?state.matchFilters.materials[x.key]:'';
+        return `<div class="composition-filter-item">
+          <label><input type="checkbox" data-match-material="${escapeHtml(x.key)}" ${selected?'checked':''}><span>${escapeHtml(titleCase(x.label))}</span></label>
+          <div class="composition-min${selected?'':' is-disabled'}"><span>не менее</span><div class="percent-filter"><input data-match-material-min="${escapeHtml(x.key)}" type="number" min="0" max="100" step="1" inputmode="numeric" value="${escapeHtml(min)}" ${selected?'':'disabled'} placeholder="0"><b>%</b></div></div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  function productPassesColor(p){
+    if(!state.matchFilters.colorEnabled)return true;
+    if(!state.matchFilters.colors.length)return true;
+    return state.matchFilters.colors.includes(normalizeFilterText(p.color));
+  }
+
+  function productPassesComposition(p){
+    if(!state.matchFilters.compositionEnabled)return true;
+    const wanted=Object.entries(state.matchFilters.materials);
+    if(!wanted.length)return true;
+    const actual=new Map((Array.isArray(p.composition)?p.composition:[]).map(x=>[normalizeFilterText(x.material),Number(x.percent)||0]));
+    return wanted.every(([key,minRaw])=>{
+      if(!actual.has(key))return false;
+      const min=Number(minRaw);return !Number.isFinite(min)||min<=0||actual.get(key)>=min;
+    });
+  }
 
   function productCard(p,match){
-    const tags=[];if(p.meterage)tags.push(`${fmt(p.meterage.metersPer100g)} м/100 г`);if(p.composition?.length)tags.push(materialText(p.composition));if(p.color)tags.push(p.color);
+    const tags=[];
+    if(p.meterage)tags.push(`${fmt(p.meterage.metersPer100g)} м/100 г`);
+    if(p.composition?.length)tags.push(materialText(p.composition));
+    if(p.color)tags.push(`Цвет: ${p.color}`);
+    if(p.shade)tags.push(`Оттенок: ${p.shade}`);
     const visual=p.thumbUrl?`<img class="product-thumb" src="${escapeHtml(p.thumbUrl)}" alt="" loading="lazy" decoding="async">`:'<div class="yarn-swatch"></div>';
     const meta=[p.albumTitle,p.country].filter(Boolean).join(' · ')||'Каталог VK';
-    const need=match.needGrams,stock=p.stockGrams==null?'не указано':`${fmt(p.stockGrams)} г`;
-    return `<article class="product-card"><div class="product-card-top">${visual}<div><h3>${escapeHtml(productTitle(p))}</h3><div class="meta">${escapeHtml(meta)}</div><span class="source-badge">VK · #Калькулятор</span></div></div><div class="tag-row">${tags.slice(0,4).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}${p.stockGrams!=null?`<span class="tag good">в наличии ${fmt(p.stockGrams)} г</span>`:''}</div><div class="product-stats"><div><span>Рекомендуемое сложение</span><b>${match.plies}</b></div><div><span>Рабочий метраж</span><b>${fmt(match.effective)} м/100 г</b></div><div><span>Нужно с запасом</span><b>${fmt(need)} г</b></div><div><span>Наличие</span><b>${stock}</b></div>${p.pricePer100g?`<div><span>Ориентир цены</span><b>≈ ${fmt(need/100*p.pricePer100g)} ₽</b></div>`:''}</div>${p.photoUrl?`<button class="card-action" data-open="${encodeURIComponent(p.photoUrl)}" type="button">Открыть фото VK</button>`:''}</article>`;
+    const need=match.needGrams;
+    const stock=p.stockGrams;
+    let stockHtml='<div class="stock-state neutral"><span>Остаток в карточке</span><b>не указан</b></div>';
+    if(stock!=null){
+      const delta=stock-need;
+      stockHtml=delta>=0
+        ?`<div class="stock-state enough"><span>Пряжи хватает</span><b>Останется ≈ ${fmt(delta)} г</b></div>`
+        :`<div class="stock-state shortage"><span>Пряжи не хватает</span><b>Не хватает ≈ ${fmt(Math.abs(delta))} г</b></div>`;
+    }
+    const deviationPct=match.deviation*100;
+    const deviationText=Math.abs(deviationPct)<0.05?'точное совпадение':`${deviationPct>0?'+':''}${fmt(deviationPct,1)}% от цели`;
+    const plyWord=match.plies===1?'1 нить':`${match.plies} нити`;
+    return `<article class="product-card">
+      <div class="product-card-top">${visual}<div><h3>${escapeHtml(productTitle(p))}</h3><div class="meta">${escapeHtml(meta)}</div><span class="source-badge">VK · #Манияпряжи</span></div></div>
+      <div class="tag-row">${tags.slice(0,5).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+      <div class="meterage-match"><div><span>Исходный метраж</span><b>${fmt(p.meterage.metersPer100g)} м/100 г</b></div><div class="match-arrow">→</div><div><span>${escapeHtml(plyWord)}</span><b>≈ ${fmt(match.effective)} м/100 г</b><small>${escapeHtml(deviationText)}</small></div></div>
+      <div class="product-stats"><div><span>Нужно с запасом</span><b>≈ ${fmt(need)} г</b></div><div><span>В карточке</span><b>${stock==null?'—':`${fmt(stock)} г`}</b></div>${p.pricePer100g?`<div><span>Ориентировочная стоимость</span><b>≈ ${fmt(need/100*p.pricePer100g)} ₽</b></div>`:''}</div>
+      ${stockHtml}
+      ${p.photoUrl?`<button class="card-action" data-open="${encodeURIComponent(p.photoUrl)}" type="button">Открыть фото VK</button>`:''}
+    </article>`;
   }
 
   function renderMatches(){
     if(!state.product){els.matchEmpty.hidden=false;els.matchContent.hidden=true;return;}
     els.matchEmpty.hidden=true;els.matchContent.hidden=false;
-    const r=state.product;const densityText=r.gauge?`ориентир для плотности — ${fmt(r.range[0])}–${fmt(r.range[1])} м/100 г`:`плотность не указана, использован расчётный ориентир ≈ ${fmt(r.calcGauge,1)} п./10 см`;els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>${escapeHtml(r.garment.name)} · ${escapeHtml(r.size.label)}</h3><p>Нужно ≈ ${fmt(r.requiredMetersWithReserve||r.requiredMeters)} м готовой нити с запасом. Целевой рабочий метраж: ${fmt(r.meterage)} м/100 г; ${densityText}.</p></div>`;
+    const r=state.product;
+    const tolPct=Math.round(matchTolerance()*100);
+    const densityText=r.gauge?`плотность ${fmt(r.gauge,1)} п./10 см`:`плотность не указана`;
+    els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>${escapeHtml(r.garment.name)} · ${escapeHtml(r.size.label)}</h3><p>Нужно ≈ ${fmt(r.requiredMetersWithReserve||r.requiredMeters)} м готовой нити с запасом. Целевой метраж: <b>${fmt(r.meterage)} м/100 г</b>; ${densityText}.</p></div>`;
+    els.matchMeterageText.textContent=`${fmt(r.meterage)} м/100 г · допуск ±${tolPct}%`;
+    els.matchMeterageHint.textContent=`Проверяем 1–${maxMatchPlies()} сложений одной и той же пряжи.`;
+    renderMatchFilterOptions();
+
     const target=r.meterage;
-    const rows=state.vkCatalog.map(p=>{const b=scoreProduct(p,target);if(!b)return null;const needRaw=(r.requiredMetersWithReserve||r.requiredMeters)/b.effective*100;const need=Math.ceil(needRaw/5)*5;const stockPenalty=p.stockGrams!=null&&p.stockGrams<need?0.35:0;return{p,b:{...b,needGrams:need},score:b.distance+stockPenalty};}).filter(Boolean).sort((a,b)=>a.score-b.score).slice(0,12);
-    els.matchGrid.innerHTML=rows.length?rows.map(x=>productCard(x.p,x.b)).join(''):`<div class="empty-state"><h3>Подходящих данных пока нет</h3><p>В каталоге нет фотографий с меткой #Калькулятор и распознанным метражом либо каталог ещё не обновлён.</p></div>`;
+    const rows=state.vkCatalog.map(p=>{
+      const b=scoreProduct(p,target);if(!b)return null;
+      if(!productPassesColor(p)||!productPassesComposition(p))return null;
+      const needRaw=(r.requiredMetersWithReserve||r.requiredMeters)/b.effective*100;
+      const need=Math.ceil(needRaw/5)*5;
+      const stockEnough=p.stockGrams==null?null:p.stockGrams>=need;
+      return{p,b:{...b,needGrams:need,stockEnough}};
+    }).filter(Boolean).sort((a,b)=>{
+      const d=a.b.absDeviation-b.b.absDeviation;if(Math.abs(d)>1e-9)return d;
+      if(a.b.stockEnough===b.b.stockEnough)return 0;
+      if(a.b.stockEnough===true)return-1;if(b.b.stockEnough===true)return 1;return 0;
+    });
+
+    els.matchCount.textContent=`${rows.length} ${rows.length%10===1&&rows.length%100!==11?'вариант':([2,3,4].includes(rows.length%10)&&![12,13,14].includes(rows.length%100)?'варианта':'вариантов')}`;
+    els.matchGrid.innerHTML=rows.length?rows.map(x=>productCard(x.p,x.b)).join(''):`<div class="empty-state match-no-results"><h3>По выбранным условиям ничего не найдено</h3><p>Попробуйте отключить цвет или состав. Метраж подбирается с допуском ±${tolPct}% и с учётом сложения одной и той же пряжи.</p></div>`;
   }
 
   function setCatalogStatus(text,type=''){
@@ -509,7 +641,7 @@
     const cached=await VKCAT.loadCached();
     if(cached&&Array.isArray(cached.items)){
       state.vkCatalog=cached.items;state.vkMeta=cached;renderMatches();
-      setCatalogStatus(`Кэш: ${cached.items.length} поз. с #Калькулятор${cached.syncedAt?' · '+formatSyncTime(cached.syncedAt):''}.`,'ok');
+      setCatalogStatus(`Кэш: ${cached.items.length} поз. с #Манияпряжи${cached.syncedAt?' · '+formatSyncTime(cached.syncedAt):''}.`,'ok');
     }
     setCatalogStatus(cached?'Обновляем каталог VK в фоне…':'Загружаем каталог VK…','loading');
     els.refreshCatalogBtn.disabled=true;
@@ -517,7 +649,7 @@
       const payload=await VKCAT.sync({onProgress:x=>setCatalogStatus(x.message||'Обновляем каталог…','loading')});
       state.vkCatalog=Array.isArray(payload.items)?payload.items:[];state.vkMeta=payload;renderMatches();
       const errors=Array.isArray(payload.errors)?payload.errors.length:0;
-      setCatalogStatus(`Каталог готов: ${state.vkCatalog.length} поз. с #Калькулятор${errors?' · ошибок: '+errors:''}.`,'ok');
+      setCatalogStatus(`Каталог готов: ${state.vkCatalog.length} поз. с #Манияпряжи${errors?' · ошибок: '+errors:''}.`,'ok');
     }catch(error){
       console.error('VK catalog sync failed:',error);
       const message=error?.error_msg||error?.message||String(error);
@@ -563,6 +695,37 @@
   $('#calculateProductBtn').addEventListener('click',calculateProduct);
   $('#goMatchBtn').addEventListener('click',()=>switchView('match'));$('#copyProductBtn').addEventListener('click',copyProduct);
   els.refreshCatalogBtn.addEventListener('click',()=>loadCatalogAndSync(true));
+  els.matchColorEnabled.addEventListener('change',()=>{
+    state.matchFilters.colorEnabled=els.matchColorEnabled.checked;
+    renderMatches();
+  });
+  els.matchColorOptions.addEventListener('change',e=>{
+    const input=e.target.closest('[data-match-color]');if(!input)return;
+    const key=String(input.dataset.matchColor||'');
+    const set=new Set(state.matchFilters.colors);
+    if(input.checked)set.add(key);else set.delete(key);
+    state.matchFilters.colors=[...set];
+    renderMatches();
+  });
+  els.matchCompositionEnabled.addEventListener('change',()=>{
+    state.matchFilters.compositionEnabled=els.matchCompositionEnabled.checked;
+    renderMatches();
+  });
+  els.matchCompositionOptions.addEventListener('change',e=>{
+    const material=e.target.closest('[data-match-material]');
+    if(material){
+      const key=String(material.dataset.matchMaterial||'');
+      if(material.checked){if(!Object.prototype.hasOwnProperty.call(state.matchFilters.materials,key))state.matchFilters.materials[key]='';}
+      else delete state.matchFilters.materials[key];
+      renderMatches();return;
+    }
+    const minInput=e.target.closest('[data-match-material-min]');
+    if(minInput){
+      const key=String(minInput.dataset.matchMaterialMin||'');
+      if(Object.prototype.hasOwnProperty.call(state.matchFilters.materials,key))state.matchFilters.materials[key]=minInput.value;
+      renderMatches();
+    }
+  });
   document.addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(!b)return;const url=decodeURIComponent(b.dataset.open);window.open(url,'_blank','noopener,noreferrer');});
 
   renderYarns();renderGarments();renderSizes();updateGaugeHint();renderMatches();initVK();
