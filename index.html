@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261001-accurate01">
+  <link rel="stylesheet" href="assets/styles.css?v=20261003-sample02">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -39,7 +39,8 @@
       <div class="consent-points">
         <div><span>1</span><p>Узоры, косы, резинки и высокая плотность вязания могут увеличить расход.</p></div>
         <div><span>2</span><p>Воротники, планки, карманы, капюшоны и другие дополнительные детали требуют дополнительной пряжи.</p></div>
-        <div><span>3</span><p>Фактический проект может потребовать как больше, так и меньше пряжи, чем показывает расчёт.</p></div>
+        <div><span>3</span><p>Фактический расход может отличаться от расчётного. Если вы сомневаетесь в результате, рекомендуется ориентироваться на большее количество пряжи.</p></div>
+        <div><span>4</span><p>Для более корректного расчёта настоятельно рекомендуется связать контрольный образец и провести его ВТО. Если вам лень вязать образец или сейчас нет времени на его изготовление, будьте готовы потом не лениться — и найти время, чтобы перевязать уже готовое изделие 😄</p></div>
       </div>
       <p class="consent-note">Используйте результат как ориентир и по возможности проверяйте его на своём образце.</p>
       <button class="primary-btn consent-btn" id="consentBtn" type="button">Согласен, продолжить</button>
@@ -54,9 +55,9 @@
     </header>
 
     <nav class="tabs" aria-label="Разделы приложения">
-      <button class="tab is-active" type="button" data-view="sample">Калькулятор образца</button>
-      <button class="tab" type="button" data-view="product">Калькулятор изделия</button>
-      <button class="tab" type="button" data-view="match">Подбор пряжи</button>
+      <button class="tab is-active" type="button" data-view="sample"><span class="tab-step">1</span>Калькулятор образца</button>
+      <button class="tab" type="button" data-view="product"><span class="tab-step">2</span>Калькулятор изделия</button>
+      <button class="tab" type="button" data-view="match"><span class="tab-step">3</span>Подбор пряжи</button>
     </nav>
 
     <main>
@@ -65,7 +66,7 @@
           <div>
             <span class="eyebrow">Шаг 1</span>
             <h1>Калькулятор образца</h1>
-            <p>Соберите рабочую нить, внесите измерения образца до и после ВТО и получите фактическую плотность.</p>
+            <p>Соберите рабочую нить и внесите данные уже готового контрольного образца после ВТО. Повторные измерения до ВТО не нужны.</p>
           </div>
           <div class="hero-yarn" aria-hidden="true"><img class="hero-app-icon" src="assets/calculator-icon.png" alt=""></div>
         </div>
@@ -77,42 +78,29 @@
           <div class="mix-result" id="mixResult" aria-live="polite"></div>
         </section>
 
-        <section class="sample-grid">
-          <div class="step-card">
-            <div class="step-title"><span>2</span><div><h2>До ВТО</h2><p>Измерьте связанный образец до влажно-тепловой обработки.</p></div></div>
-            <div class="field-grid two">
-              <label class="field"><span>Количество петель</span><input id="beforeStitches" type="number" min="1" step="1" placeholder="—" inputmode="numeric"></label>
-              <label class="field"><span>Количество рядов</span><input id="beforeRows" type="number" min="1" step="1" placeholder="—" inputmode="numeric"></label>
-              <label class="field"><span>Ширина</span><div class="input-unit"><input id="beforeWidth" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
-              <label class="field"><span>Высота</span><div class="input-unit"><input id="beforeHeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
-              <label class="field full"><span>Вес образца <em class="optional-mark">необязательно</em></span><div class="input-unit"><input id="sampleWeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>г</b></div><small class="field-help">Если вес указан, расход изделия рассчитывается по фактическому расходу вашего образца. Без веса используется геометрическая оценка.</small></label>
-            </div>
-          </div>
-
-          <div class="step-card">
-            <div class="step-title"><span>3</span><div><h2>После ВТО</h2><p>Петли и ряды остаются теми же — повторно измерьте только размер образца.</p></div></div>
-            <div class="field-grid two">
-              <label class="field"><span>Ширина</span><div class="input-unit"><input id="afterWidth" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
-              <label class="field"><span>Высота</span><div class="input-unit"><input id="afterHeight" type="number" min="0.1" step="0.1" placeholder="—" inputmode="decimal"><b>см</b></div></label>
-            </div>
-            <div class="after-note">Вес после ВТО не требуется.</div>
+        <section class="step-card">
+          <div class="step-title"><span>2</span><div><h2>Готовый образец после ВТО</h2><p>Укажите количество петель и рядов в образце и его фактические размеры после ВТО. Вес можно не указывать.</p></div></div>
+          <div class="field-grid two sample-ready-grid">
+            <label class="field"><span>Количество петель</span><input id="sampleStitches" type="number" min="1" step="1" placeholder="например, 20" inputmode="numeric"></label>
+            <label class="field"><span>Количество рядов</span><input id="sampleRows" type="number" min="1" step="1" placeholder="например, 28" inputmode="numeric"></label>
+            <label class="field"><span>Ширина образца</span><div class="input-unit"><input id="sampleWidth" type="number" min="0.1" step="0.1" placeholder="например, 10" inputmode="decimal"><b>см</b></div></label>
+            <label class="field"><span>Высота образца</span><div class="input-unit"><input id="sampleHeight" type="number" min="0.1" step="0.1" placeholder="например, 10" inputmode="decimal"><b>см</b></div></label>
+            <label class="field full"><span>Примерный вес образца <em class="optional-mark">необязательно</em></span><div class="input-unit"><input id="sampleWeight" type="number" min="0.1" step="0.1" placeholder="например, 6,5" inputmode="decimal"><b>г</b></div><small class="field-help">Вес нужен только для более точной оценки расхода в граммах. Плотность по петлям и рядам рассчитывается и без него.</small></label>
           </div>
         </section>
 
         <div class="sample-action-row">
-          <button class="primary-btn" id="calculateSampleBtn" type="button">Рассчитать образец</button>
+          <button class="primary-btn" id="calculateSampleBtn" type="button">Рассчитать плотность</button>
           <button class="ghost-btn reset-btn" id="resetSampleBtn" type="button">Сбросить расчёт</button>
         </div>
         <div class="validation" id="sampleValidation" role="alert" aria-live="polite"></div>
 
         <section class="result-card" id="sampleResultCard" hidden aria-live="polite">
-          <div class="result-top"><div><span class="eyebrow">Результат образца</span><h2>Изменения после ВТО</h2></div><div class="compat-badge good">Плотность рассчитана</div></div>
-          <div class="sample-results">
-            <div class="result-panel"><span>Плотность до ВТО</span><b id="beforeGaugeResult">—</b><small id="beforeRowsResult">—</small></div>
-            <div class="result-panel strong"><span>Плотность после ВТО</span><b id="afterGaugeResult">—</b><small id="afterRowsResult">—</small></div>
-            <div class="result-panel"><span>Изменение ширины</span><b id="widthChangeResult">—</b><small id="widthChangeText">—</small></div>
-            <div class="result-panel"><span>Изменение высоты</span><b id="heightChangeResult">—</b><small id="heightChangeText">—</small></div>
-            <div class="result-panel"><span>Расход по площади</span><b id="areaConsumptionResult">—</b><small id="areaConsumptionHint">по размеру после ВТО</small></div>
+          <div class="result-top"><div><span class="eyebrow">Данные готового образца</span><h2>Плотность после ВТО</h2></div><div class="compat-badge good">Плотность рассчитана</div></div>
+          <div class="sample-results sample-results-ready">
+            <div class="result-panel strong"><span>Плотность по петлям</span><b id="sampleGaugeResult">—</b><small>на 10 см ширины</small></div>
+            <div class="result-panel strong"><span>Плотность по рядам</span><b id="sampleRowsGaugeResult">—</b><small>на 10 см высоты</small></div>
+            <div class="result-panel"><span>Расход по площади</span><b id="areaConsumptionResult">—</b><small id="areaConsumptionHint">вес образца не указан</small></div>
             <div class="result-panel"><span>Рабочая нить</span><b id="sampleMeterageResult">—</b><small id="sampleMetersUsedResult">—</small></div>
           </div>
           <div class="result-actions"><button class="secondary-btn" id="useSampleBtn" type="button">Передать данные в изделие</button></div>
@@ -194,10 +182,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js"></script>
-  <script src="js/config.js?v=20261001-accurate01"></script>
-  <script src="js/data.js?v=20261001-accurate01"></script>
-  <script src="js/parser.js?v=20261001-accurate01"></script>
-  <script src="js/vk-catalog.js?v=20261001-accurate01"></script>
-  <script src="js/app.js?v=20261001-accurate01"></script>
+  <script src="js/config.js?v=20261003-sample02"></script>
+  <script src="js/data.js?v=20261003-sample02"></script>
+  <script src="js/parser.js?v=20261003-sample02"></script>
+  <script src="js/vk-catalog.js?v=20261003-sample02"></script>
+  <script src="js/app.js?v=20261003-sample02"></script>
 </body>
 </html>
