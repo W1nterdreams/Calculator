@@ -30,6 +30,7 @@
     catalogStarted:false,
     matchMode:'characteristics',
     matchManualMeterage:'',
+    matchSearchRequested:false,
     matchFilters:{colorEnabled:false,colors:[],compositionEnabled:false,materials:{}}
   };
 
@@ -40,7 +41,7 @@
     sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productDimensionsCard:$('#productDimensionsCard'),productDimensionsFields:$('#productDimensionsFields'),productDimensionsHint:$('#productDimensionsHint'),productDimensionSummary:$('#productDimensionSummary'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
     refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid'),
     matchCount:$('#matchCount'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),
-    matchModeCharacteristics:$('#matchModeCharacteristics'),matchModeProduct:$('#matchModeProduct'),manualMatchInput:$('#manualMatchInput'),matchManualMeterage:$('#matchManualMeterage'),productMatchSource:$('#productMatchSource'),productMatchSourceText:$('#productMatchSourceText')
+    matchModeCharacteristics:$('#matchModeCharacteristics'),matchModeProduct:$('#matchModeProduct'),manualMatchInput:$('#manualMatchInput'),matchManualMeterage:$('#matchManualMeterage'),productMatchSource:$('#productMatchSource'),productMatchSourceText:$('#productMatchSourceText'),runMatchSearchBtn:$('#runMatchSearchBtn')
   };
 
   function icon(name){return `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;}
@@ -481,7 +482,7 @@
     els.productResultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
 
-  function materialText(c){return c&&c.length?c.map(x=>`${fmt(x.percent,1).replace(',0','')}% ${x.material}`).join(', '):'состав не распознан';}
+  function materialText(c){return c&&c.length?c.map(x=>`${fmt(x.percent,1).replace(',0','')}% ${x.material}`).join(', '):'состав не указан';}
   function productTitle(p){return [p.brand,p.name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' · ')||'Пряжа';}
   function normalizeFilterText(v){return String(v||'').trim().toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ');}
   function titleCase(v){const s=String(v||'').trim();return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
@@ -529,7 +530,7 @@
     els.matchColorOptions.hidden=!state.matchFilters.colorEnabled;
     els.matchColorHint.hidden=state.matchFilters.colorEnabled&&colors.length>0;
     if(!colors.length){
-      els.matchColorOptions.innerHTML='<div class="filter-empty">В каталоге пока нет распознанных значений поля «Цвет».</div>';
+      els.matchColorOptions.innerHTML='<div class="filter-empty">Нет доступных цветов.</div>';
       els.matchColorHint.hidden=false;
     }else{
       els.matchColorOptions.innerHTML=colors.map(x=>`<label class="filter-chip"><input type="checkbox" data-match-color="${escapeHtml(x.key)}" ${state.matchFilters.colors.includes(x.key)?'checked':''}><span>${escapeHtml(x.label)}</span></label>`).join('');
@@ -542,7 +543,7 @@
     els.matchCompositionOptions.hidden=!state.matchFilters.compositionEnabled;
     els.matchCompositionHint.hidden=state.matchFilters.compositionEnabled&&materials.length>0;
     if(!materials.length){
-      els.matchCompositionOptions.innerHTML='<div class="filter-empty">В каталоге пока нет распознанного состава.</div>';
+      els.matchCompositionOptions.innerHTML='<div class="filter-empty">Нет доступных вариантов состава.</div>';
       els.matchCompositionHint.hidden=false;
     }else{
       els.matchCompositionOptions.innerHTML=materials.map(x=>{
@@ -580,47 +581,57 @@
     if(p.color)tags.push(`Цвет: ${p.color}`);
     if(p.shade)tags.push(`Оттенок: ${p.shade}`);
     const visual=p.thumbUrl?`<img class="product-thumb" src="${escapeHtml(p.thumbUrl)}" alt="" loading="lazy" decoding="async">`:'<div class="yarn-swatch"></div>';
-    const meta=[p.albumTitle,p.country].filter(Boolean).join(' · ')||'Каталог VK';
+    const meta=[p.country].filter(Boolean).join(' · ');
     const hasNeed=Number.isFinite(match.needGrams)&&match.needGrams>0;
     const need=hasNeed?match.needGrams:null;
     const stock=p.stockGrams;
     let stockHtml='';
     let statsHtml='';
     if(hasNeed){
-      let stockState='<div class="stock-state neutral"><span>Остаток в карточке</span><b>не указан</b></div>';
+      let stockState='<div class="stock-state neutral"><span>Количество</span><b>не указано</b></div>';
       if(stock!=null){
         const delta=stock-need;
         stockState=delta>=0
           ?`<div class="stock-state enough"><span>Пряжи хватает</span><b>Останется ≈ ${fmt(delta)} г</b></div>`
           :`<div class="stock-state shortage"><span>Пряжи не хватает</span><b>Не хватает ≈ ${fmt(Math.abs(delta))} г</b></div>`;
       }
-      statsHtml=`<div class="product-stats"><div><span>Нужно с запасом</span><b>≈ ${fmt(need)} г</b></div><div><span>В карточке</span><b>${stock==null?'—':`${fmt(stock)} г`}</b></div>${p.pricePer100g?`<div><span>Ориентировочная стоимость</span><b>≈ ${fmt(need/100*p.pricePer100g)} ₽</b></div>`:''}</div>`;
+      statsHtml=`<div class="product-stats"><div><span>Нужно с запасом</span><b>≈ ${fmt(need)} г</b></div><div><span>В наличии</span><b>${stock==null?'—':`${fmt(stock)} г`}</b></div>${p.pricePer100g?`<div><span>Ориентировочная стоимость</span><b>≈ ${fmt(need/100*p.pricePer100g)} ₽</b></div>`:''}</div>`;
       stockHtml=stockState;
     }else{
-      statsHtml=`<div class="product-stats characteristic-stats">${stock!=null?`<div><span>В карточке</span><b>${fmt(stock)} г</b></div>`:''}${p.pricePer100g?`<div><span>Цена</span><b>${fmt(p.pricePer100g)} ₽ / 100 г</b></div>`:''}</div>`;
+      statsHtml=`<div class="product-stats characteristic-stats">${stock!=null?`<div><span>В наличии</span><b>${fmt(stock)} г</b></div>`:''}${p.pricePer100g?`<div><span>Цена</span><b>${fmt(p.pricePer100g)} ₽ / 100 г</b></div>`:''}</div>`;
     }
-    const deviationPct=match.deviation*100;
-    const deviationText=Math.abs(deviationPct)<0.05?'точное совпадение':`${deviationPct>0?'+':''}${fmt(deviationPct,1)}% от цели`;
-    const plyWord=match.plies===1?'1 нить':`${match.plies} нити`;
+    let meterageHtml='';
+    if(match.meterageMatched&&p.meterage){
+      const deviationPct=match.deviation*100;
+      const deviationText=Math.abs(deviationPct)<0.05?'точное совпадение':`${deviationPct>0?'+':''}${fmt(deviationPct,1)}% от цели`;
+      const plyWord=match.plies===1?'1 нить':`${match.plies} нити`;
+      meterageHtml=`<div class="meterage-match"><div><span>Исходный метраж</span><b>${fmt(p.meterage.metersPer100g)} м/100 г</b></div><div class="match-arrow">→</div><div><span>${escapeHtml(plyWord)}</span><b>≈ ${fmt(match.effective)} м/100 г</b><small>${escapeHtml(deviationText)}</small></div></div>`;
+    }
     return `<article class="product-card">
-      <div class="product-card-top">${visual}<div><h3>${escapeHtml(productTitle(p))}</h3><div class="meta">${escapeHtml(meta)}</div><span class="source-badge">VK · #Манияпряжи</span></div></div>
+      <div class="product-card-top">${visual}<div><h3>${escapeHtml(productTitle(p))}</h3>${meta?`<div class="meta">${escapeHtml(meta)}</div>`:''}</div></div>
       <div class="tag-row">${tags.slice(0,5).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
-      <div class="meterage-match"><div><span>Исходный метраж</span><b>${fmt(p.meterage.metersPer100g)} м/100 г</b></div><div class="match-arrow">→</div><div><span>${escapeHtml(plyWord)}</span><b>≈ ${fmt(match.effective)} м/100 г</b><small>${escapeHtml(deviationText)}</small></div></div>
+      ${meterageHtml}
       ${statsHtml}
       ${stockHtml}
       ${p.photoUrl?`<button class="card-action" data-open="${encodeURIComponent(p.photoUrl)}" type="button">Открыть фото VK</button>`:''}
     </article>`;
   }
 
+  function hasSelectedColor(){return state.matchFilters.colorEnabled&&state.matchFilters.colors.length>0;}
+  function hasSelectedComposition(){return state.matchFilters.compositionEnabled&&Object.keys(state.matchFilters.materials).length>0;}
+
   function matchContext(){
     if(state.matchMode==='product'){
       if(!state.product)return null;
       const r=state.product;
-      return {mode:'product',target:r.meterage,requiredMeters:r.requiredMetersWithReserve||r.requiredMeters,product:r};
+      return {mode:'product',target:r.meterage,requiredMeters:r.requiredMetersWithReserve||r.requiredMeters,product:r,hasMeterage:true};
     }
-    const target=numeric(els.matchManualMeterage.value);
-    if(!target||target<=0)return null;
-    return {mode:'characteristics',target};
+    const rawTarget=numeric(els.matchManualMeterage.value);
+    const target=rawTarget&&rawTarget>0?rawTarget:null;
+    const hasColor=hasSelectedColor();
+    const hasComposition=hasSelectedComposition();
+    if(!target&&!hasColor&&!hasComposition)return null;
+    return {mode:'characteristics',target,hasMeterage:!!target,hasColor,hasComposition};
   }
 
   function renderMatchMode(){
@@ -639,38 +650,74 @@
     }
   }
 
+  function setMatchPrompt(title,text){
+    els.matchEmpty.hidden=false;els.matchContent.hidden=true;
+    els.matchEmpty.querySelector('h3').textContent=title;
+    els.matchEmpty.querySelector('p').textContent=text;
+  }
+
   function renderMatches(){
     renderMatchMode();
     renderMatchFilterOptions();
     const tolPct=Math.round(matchTolerance()*100);
     const ctx=matchContext();
-    if(!ctx){
-      els.matchMeterageText.textContent=state.matchMode==='product'?'Нет расчёта изделия':'Укажите метраж';
-      els.matchMeterageHint.textContent=`Допуск ±${tolPct}%, проверяем 1–${maxMatchPlies()} сложений одной и той же пряжи.`;
-      els.matchCount.textContent='0 вариантов';
-      els.matchEmpty.hidden=false;els.matchContent.hidden=true;
-      if(state.matchMode==='product'){
-        els.matchEmpty.querySelector('h3').textContent='Сначала рассчитайте изделие';
-        els.matchEmpty.querySelector('p').textContent='Либо переключитесь на «По характеристикам» и задайте метраж, цвет и состав вручную.';
+    const manualTarget=numeric(els.matchManualMeterage.value);
+    if(state.matchMode==='product'){
+      if(state.product){
+        els.matchMeterageText.textContent=`${fmt(state.product.meterage)} м/100 г · допуск ±${tolPct}%`;
+        els.matchMeterageHint.textContent=`Проверяем 1–${maxMatchPlies()} сложений одной и той же пряжи.`;
       }else{
-        els.matchEmpty.querySelector('h3').textContent='Укажите нужный метраж';
-        els.matchEmpty.querySelector('p').textContent='Цвет и состав можно выбрать уже сейчас. После ввода метража покажем подходящую пряжу с учётом сложений.';
+        els.matchMeterageText.textContent='Нет расчёта изделия';
+        els.matchMeterageHint.textContent='Сначала рассчитайте изделие или выберите режим «По характеристикам».';
+      }
+    }else if(manualTarget&&manualTarget>0){
+      els.matchMeterageText.textContent=`${fmt(manualTarget)} м/100 г · допуск ±${tolPct}%`;
+      els.matchMeterageHint.textContent=`Проверяем 1–${maxMatchPlies()} сложений одной и той же пряжи.`;
+    }else{
+      els.matchMeterageText.textContent='Метраж не используется';
+      els.matchMeterageHint.textContent='Оставьте поле пустым, если метраж не важен.';
+    }
+
+    if(!state.matchSearchRequested){
+      els.matchCount.textContent='—';
+      if(state.matchMode==='product'&&!state.product){
+        setMatchPrompt('Сначала рассчитайте изделие','Либо переключитесь на «По характеристикам» и задайте один или несколько параметров вручную.');
+      }else if(ctx){
+        setMatchPrompt('Условия готовы','Нажмите «Найти», чтобы показать подходящую пряжу.');
+      }else{
+        setMatchPrompt('Задайте условия поиска','Можно искать по метражу, цвету, составу или их сочетанию. Затем нажмите «Найти».');
       }
       return;
     }
+
+    if(!ctx){
+      els.matchCount.textContent='0 вариантов';
+      if(state.matchMode==='product')setMatchPrompt('Сначала рассчитайте изделие','Либо переключитесь на «По характеристикам».');
+      else setMatchPrompt('Выберите хотя бы одно условие','Укажите метраж, выберите цвет, состав или несколько условий одновременно.');
+      return;
+    }
+
     els.matchEmpty.hidden=true;els.matchContent.hidden=false;
     if(ctx.mode==='product'){
       const r=ctx.product;
       const densityText=r.gauge?`плотность ${fmt(r.gauge,1)} п./10 см`:`плотность не указана`;
       els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>${escapeHtml(r.garment.name)} · ${escapeHtml(r.size.label)}</h3><p>Нужно ≈ ${fmt(ctx.requiredMeters)} м готовой нити с запасом. Целевой метраж: <b>${fmt(ctx.target)} м/100 г</b>; ${densityText}.</p></div>`;
     }else{
-      els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>Подбор по характеристикам</h3><p>Целевой метраж: <b>${fmt(ctx.target)} м/100 г</b>. Расчёт изделия не используется, поэтому требуемый вес и достаточность остатка не рассчитываются.</p></div>`;
+      const bits=[];
+      if(ctx.target)bits.push(`метраж ${fmt(ctx.target)} м/100 г`);
+      if(ctx.hasColor)bits.push('выбранный цвет');
+      if(ctx.hasComposition)bits.push('выбранный состав');
+      els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>Подбор по характеристикам</h3><p>Учитываем: ${escapeHtml(bits.join(' · '))}.</p></div>`;
     }
-    els.matchMeterageText.textContent=`${fmt(ctx.target)} м/100 г · допуск ±${tolPct}%`;
-    els.matchMeterageHint.textContent=`Проверяем 1–${maxMatchPlies()} сложений одной и той же пряжи.`;
 
     const rows=state.vkCatalog.map(p=>{
-      const b=scoreProduct(p,ctx.target);if(!b)return null;
+      let b;
+      if(ctx.hasMeterage){
+        b=scoreProduct(p,ctx.target);if(!b)return null;
+        b={...b,meterageMatched:true};
+      }else{
+        b={plies:1,effective:p.meterage?Number(p.meterage.metersPer100g):null,deviation:null,absDeviation:Number.POSITIVE_INFINITY,meterageMatched:false};
+      }
       if(!productPassesColor(p)||!productPassesComposition(p))return null;
       if(ctx.mode==='product'){
         const needRaw=ctx.requiredMeters/b.effective*100;
@@ -680,14 +727,15 @@
       }
       return{p,b:{...b,needGrams:null,stockEnough:null}};
     }).filter(Boolean).sort((a,b)=>{
-      const d=a.b.absDeviation-b.b.absDeviation;if(Math.abs(d)>1e-9)return d;
-      if(ctx.mode!=='product')return 0;
-      if(a.b.stockEnough===b.b.stockEnough)return 0;
-      if(a.b.stockEnough===true)return-1;if(b.b.stockEnough===true)return 1;return 0;
+      if(ctx.hasMeterage){const d=a.b.absDeviation-b.b.absDeviation;if(Math.abs(d)>1e-9)return d;}
+      if(ctx.mode==='product'){
+        if(a.b.stockEnough!==b.b.stockEnough){if(a.b.stockEnough===true)return-1;if(b.b.stockEnough===true)return 1;}
+      }
+      return productTitle(a.p).localeCompare(productTitle(b.p),'ru');
     });
 
     els.matchCount.textContent=`${rows.length} ${rows.length%10===1&&rows.length%100!==11?'вариант':([2,3,4].includes(rows.length%10)&&![12,13,14].includes(rows.length%100)?'варианта':'вариантов')}`;
-    els.matchGrid.innerHTML=rows.length?rows.map(x=>productCard(x.p,x.b)).join(''):`<div class="empty-state match-no-results"><h3>По выбранным условиям ничего не найдено</h3><p>Попробуйте отключить цвет или состав. Метраж подбирается с допуском ±${tolPct}% и с учётом сложения одной и той же пряжи.</p></div>`;
+    els.matchGrid.innerHTML=rows.length?rows.map(x=>productCard(x.p,x.b)).join(''):`<div class="empty-state match-no-results"><h3>По выбранным условиям ничего не найдено</h3><p>Попробуйте изменить или отключить один из фильтров${ctx.hasMeterage?`. Для метража используется допуск ±${tolPct}% и учитывается сложение одной и той же пряжи.`:'.'}</p></div>`;
   }
 
   function setCatalogStatus(text,type=''){
@@ -702,19 +750,18 @@
     const cached=await VKCAT.loadCached();
     if(cached&&Array.isArray(cached.items)){
       state.vkCatalog=cached.items;state.vkMeta=cached;renderMatches();
-      setCatalogStatus(`Кэш: ${cached.items.length} поз. с #Манияпряжи${cached.syncedAt?' · '+formatSyncTime(cached.syncedAt):''}.`,'ok');
+      setCatalogStatus(`Каталог готов${cached.syncedAt?' · обновлён '+formatSyncTime(cached.syncedAt):''}.`,'ok');
     }
-    setCatalogStatus(cached?'Обновляем каталог VK в фоне…':'Загружаем каталог VK…','loading');
+    setCatalogStatus(cached?'Обновляем каталог…':'Загружаем каталог…','loading');
     els.refreshCatalogBtn.disabled=true;
     try{
-      const payload=await VKCAT.sync({onProgress:x=>setCatalogStatus(x.message||'Обновляем каталог…','loading')});
+      const payload=await VKCAT.sync({onProgress:()=>setCatalogStatus('Обновляем каталог…','loading')});
       state.vkCatalog=Array.isArray(payload.items)?payload.items:[];state.vkMeta=payload;renderMatches();
       const errors=Array.isArray(payload.errors)?payload.errors.length:0;
-      setCatalogStatus(`Каталог готов: ${state.vkCatalog.length} поз. с #Манияпряжи${errors?' · ошибок: '+errors:''}.`,'ok');
+      setCatalogStatus(errors?'Каталог обновлён частично.':'Каталог готов.','ok');
     }catch(error){
       console.error('VK catalog sync failed:',error);
-      const message=error?.error_msg||error?.message||String(error);
-      setCatalogStatus(`${cached?'Используем кэш. ':''}Обновление VK не выполнено: ${message}`,'error');
+      setCatalogStatus(cached?'Не удалось обновить каталог. Используется сохранённая версия.':'Не удалось загрузить каталог.','error');
     }finally{els.refreshCatalogBtn.disabled=false;}
   }
 
@@ -754,14 +801,14 @@
   els.productDimensionsFields.addEventListener('input',()=>{readProductDimensions();updateDimensionSummary();els.productResultCard.hidden=true;state.product=null;renderMatches();});
   [els.productGauge,els.productRowGauge,els.productMeterage].forEach(input=>input.addEventListener('input',()=>{state.product=null;els.productResultCard.hidden=true;els.productValidation.textContent='';renderMatches();updateGaugeHint();}));
   $('#calculateProductBtn').addEventListener('click',calculateProduct);
-  $('#goMatchBtn').addEventListener('click',()=>{state.matchMode='product';renderMatches();switchView('match');});$('#copyProductBtn').addEventListener('click',copyProduct);
+  $('#goMatchBtn').addEventListener('click',()=>{state.matchMode='product';state.matchSearchRequested=true;renderMatches();switchView('match');});$('#copyProductBtn').addEventListener('click',copyProduct);
   els.refreshCatalogBtn.addEventListener('click',()=>loadCatalogAndSync(true));
-  els.matchModeCharacteristics.addEventListener('click',()=>{state.matchMode='characteristics';renderMatches();});
-  els.matchModeProduct.addEventListener('click',()=>{state.matchMode='product';renderMatches();});
-  els.matchManualMeterage.addEventListener('input',()=>{state.matchManualMeterage=els.matchManualMeterage.value;renderMatches();});
+  els.matchModeCharacteristics.addEventListener('click',()=>{state.matchMode='characteristics';state.matchSearchRequested=false;renderMatches();});
+  els.matchModeProduct.addEventListener('click',()=>{state.matchMode='product';state.matchSearchRequested=false;renderMatches();});
+  els.matchManualMeterage.addEventListener('input',()=>{state.matchManualMeterage=els.matchManualMeterage.value;state.matchSearchRequested=false;renderMatches();});
   els.matchColorEnabled.addEventListener('change',()=>{
     state.matchFilters.colorEnabled=els.matchColorEnabled.checked;
-    renderMatches();
+    state.matchSearchRequested=false;renderMatches();
   });
   els.matchColorOptions.addEventListener('change',e=>{
     const input=e.target.closest('[data-match-color]');if(!input)return;
@@ -769,11 +816,11 @@
     const set=new Set(state.matchFilters.colors);
     if(input.checked)set.add(key);else set.delete(key);
     state.matchFilters.colors=[...set];
-    renderMatches();
+    state.matchSearchRequested=false;renderMatches();
   });
   els.matchCompositionEnabled.addEventListener('change',()=>{
     state.matchFilters.compositionEnabled=els.matchCompositionEnabled.checked;
-    renderMatches();
+    state.matchSearchRequested=false;renderMatches();
   });
   els.matchCompositionOptions.addEventListener('change',e=>{
     const material=e.target.closest('[data-match-material]');
@@ -781,14 +828,19 @@
       const key=String(material.dataset.matchMaterial||'');
       if(material.checked){if(!Object.prototype.hasOwnProperty.call(state.matchFilters.materials,key))state.matchFilters.materials[key]='';}
       else delete state.matchFilters.materials[key];
-      renderMatches();return;
+      state.matchSearchRequested=false;renderMatches();return;
     }
     const minInput=e.target.closest('[data-match-material-min]');
     if(minInput){
       const key=String(minInput.dataset.matchMaterialMin||'');
       if(Object.prototype.hasOwnProperty.call(state.matchFilters.materials,key))state.matchFilters.materials[key]=minInput.value;
-      renderMatches();
+      state.matchSearchRequested=false;renderMatches();
     }
+  });
+  els.runMatchSearchBtn.addEventListener('click',()=>{
+    state.matchSearchRequested=true;
+    renderMatches();
+    if(!matchContext())showToast(state.matchMode==='product'?'Сначала рассчитайте изделие':'Выберите хотя бы одно условие');
   });
   document.addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(!b)return;const url=decodeURIComponent(b.dataset.open);window.open(url,'_blank','noopener,noreferrer');});
 

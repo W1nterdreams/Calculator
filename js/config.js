@@ -4,7 +4,7 @@
     VK_API_VERSION:'5.199',
     GROUP_ID:173909287,
     OWNER_ID:-173909287,
-    ALBUM_IDS:[282549589],
+    ALBUM_IDS:[282549589,282549619,306350292],
     PARSER_MARKER:'#Манияпряжи',
     MATCH_TOLERANCE:0.10,
     MAX_MATCH_PLIES:6,
@@ -13,6 +13,6 @@
     DB_NAME:'mania-yarn-vk-catalog',
     DB_VERSION:1,
     DB_STORE:'catalog',
-    DB_KEY:'group-173909287-album-282549589-maniapryazhi-v1'
+    DB_KEY:'group-173909287-albums-282549589-282549619-306350292-maniapryazhi-v2'
   };
 })();
