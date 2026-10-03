@@ -72,7 +72,7 @@
         </div>
 
         <section class="step-card">
-          <div class="step-title"><span>1</span><div><h2>Рабочая нить</h2><p>Можно объединить до пяти разных видов пряжи. Для каждой укажите метраж, вес и до шести компонентов состава.</p></div></div>
+          <div class="step-title"><span>1</span><div><h2>Рабочая нить</h2><p>Можно объединить до пяти разных видов пряжи. Для каждой укажите метраж, вес и состав. Дополнительные компоненты состава можно добавлять по мере необходимости.</p></div></div>
           <div class="yarn-components" id="yarnComponents"></div>
           <button class="ghost-btn add-yarn-btn" id="addYarnBtn" type="button">+ Добавить нить</button>
           <div class="mix-result" id="mixResult" aria-live="polite"></div>
@@ -113,9 +113,9 @@
         <section class="step-card product-sample-card">
           <div class="step-title"><span>1</span><div><h2>Данные образца</h2><p id="sampleTransferStatus">Введите данные вручную или возьмите их из первого этапа. Плотность можно не указывать — тогда расчёт будет менее точным.</p></div></div>
           <div class="product-sample-inputs">
-            <label class="field"><span>Петли <em class="optional-mark">необязательно</em></span><div class="input-unit"><input id="productGauge" type="number" min="8" max="40" step="0.1" inputmode="decimal" placeholder="например, 20"><b>п./10 см</b></div></label>
-            <label class="field"><span>Ряды <em class="optional-mark">необязательно</em></span><div class="input-unit"><input id="productRowGauge" type="number" min="1" step="0.1" inputmode="decimal" placeholder="например, 28"><b>р./10 см</b></div></label>
-            <label class="field"><span>Метраж</span><div class="input-unit"><input id="productMeterage" type="number" min="1" step="1" inputmode="decimal" placeholder="например, 280"><b>м/100 г</b></div></label>
+            <label class="field"><span>Петли на 10 см <em class="optional-mark">необязательно</em></span><div class="input-unit"><input id="productGauge" type="number" min="8" max="40" step="0.1" inputmode="decimal" placeholder="например, 20"><b>п.</b></div></label>
+            <label class="field"><span>Ряды на 10 см <em class="optional-mark">необязательно</em></span><div class="input-unit"><input id="productRowGauge" type="number" min="1" step="0.1" inputmode="decimal" placeholder="например, 28"><b>р.</b></div></label>
+            <label class="field"><span>Метраж на 100 г</span><div class="input-unit"><input id="productMeterage" type="number" min="1" step="1" inputmode="decimal" placeholder="например, 280"><b>м</b></div></label>
           </div>
           <div class="meter-hint" id="gaugeHint"></div>
           <button class="secondary-btn product-pull-btn" id="pullSampleBtn" type="button">Взять данные из образца</button>
