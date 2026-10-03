@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261003-match07">
+  <link rel="stylesheet" href="assets/styles.css?v=20261003-match08">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -162,54 +162,55 @@
         <div class="catalog-status" id="catalogStatus" aria-live="polite"><span class="status-dot"></span><span>Каталог ещё не загружен.</span></div>
 
         <section class="match-mode-card" aria-label="Режим подбора">
-          <div class="match-mode-copy"><span class="eyebrow">Режим подбора</span><h2>Можно подбирать и без расчёта изделия</h2><p>Для подбора по характеристикам достаточно указать нужный метраж. Цвет и состав можно подключить дополнительными фильтрами.</p></div>
+          <div class="match-mode-copy"><span class="eyebrow">Режим подбора</span><h2>Можно подбирать и без расчёта изделия</h2><p>В режиме «По характеристикам» сразу задайте метраж, а при необходимости — цвет и состав. Все включённые условия работают одновременно.</p></div>
           <div class="match-mode-switch" role="group" aria-label="Выбор режима подбора">
             <button class="match-mode-btn is-active" id="matchModeCharacteristics" type="button" data-match-mode="characteristics">По характеристикам</button>
             <button class="match-mode-btn" id="matchModeProduct" type="button" data-match-mode="product">По расчёту изделия</button>
           </div>
-          <div class="manual-match-input" id="manualMatchInput">
-            <label class="field"><span>Нужный метраж на 100 г</span><div class="input-unit"><input id="matchManualMeterage" type="number" min="1" step="1" inputmode="decimal" placeholder="например, 500"><b>м</b></div></label>
-            <small>Подбор учитывает допуск ±10% и сложение одной и той же пряжи в 1–6 нитей.</small>
-          </div>
-          <div class="product-match-source" id="productMatchSource" hidden>
-            <div id="productMatchSourceText">Сначала рассчитайте изделие во второй вкладке.</div>
-            <button class="secondary-btn tiny" type="button" data-go="product">Перейти к изделию</button>
+
+          <div class="match-criteria" aria-labelledby="matchCriteriaTitle">
+            <div class="match-criteria-head">
+              <div><span class="eyebrow">Характеристики</span><h3 id="matchCriteriaTitle">Что подбираем</h3></div>
+              <div class="match-count" id="matchCount">0 вариантов</div>
+            </div>
+
+            <div class="match-criterion is-meterage">
+              <div class="match-criterion-label"><span class="criterion-number">1</span><div><strong>Метраж</strong><small>Учитываем допуск ±10% и сложение одной и той же пряжи в 1–6 нитей.</small></div></div>
+              <div class="match-criterion-control">
+                <div class="manual-match-input" id="manualMatchInput">
+                  <label class="field"><span>Нужный метраж на 100 г</span><div class="input-unit"><input id="matchManualMeterage" type="number" min="1" step="1" inputmode="decimal" placeholder="например, 500"><b>м</b></div></label>
+                </div>
+                <div class="product-match-source" id="productMatchSource" hidden>
+                  <div id="productMatchSourceText">Сначала рассчитайте изделие во второй вкладке.</div>
+                  <button class="secondary-btn tiny" type="button" data-go="product">Перейти к изделию</button>
+                </div>
+                <div class="criterion-current"><strong id="matchMeterageText">Укажите метраж</strong><small id="matchMeterageHint">Метраж — основной критерий подбора.</small></div>
+              </div>
+            </div>
+
+            <div class="match-criterion">
+              <div class="match-criterion-label"><span class="criterion-number">2</span><label class="match-filter-toggle"><input id="matchColorEnabled" type="checkbox"><span>Цвет</span></label></div>
+              <div class="match-criterion-control">
+                <div id="matchColorOptions" class="filter-options" hidden></div>
+                <small id="matchColorHint">Цвета формируются автоматически из распарсенных карточек VK.</small>
+              </div>
+            </div>
+
+            <div class="match-criterion">
+              <div class="match-criterion-label"><span class="criterion-number">3</span><label class="match-filter-toggle"><input id="matchCompositionEnabled" type="checkbox"><span>Состав</span></label></div>
+              <div class="match-criterion-control">
+                <div id="matchCompositionOptions" class="composition-filter-options" hidden></div>
+                <small id="matchCompositionHint">Выберите компоненты состава. Несколько компонентов работают как «И», для каждого можно задать минимальный процент.</small>
+              </div>
+            </div>
+
+            <p class="match-filter-note">Метраж учитывается всегда. Несколько выбранных цветов работают как «ИЛИ». Цвет, состав и метраж между собой работают как «И».</p>
           </div>
         </section>
 
-        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Укажите нужный метраж</h3><p>После этого покажем подходящую пряжу из каталога с учётом сложений.</p></div>
+        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Укажите нужный метраж</h3><p>Цвет и состав уже можно выбрать выше. После ввода метража покажем подходящую пряжу с учётом сложений.</p></div>
         <div id="matchContent" hidden>
           <div class="match-summary" id="matchSummary"></div>
-
-          <section class="match-filter-card" aria-labelledby="matchFiltersTitle">
-            <div class="match-filter-head">
-              <div><span class="eyebrow">Условия подбора</span><h2 id="matchFiltersTitle">Фильтры работают одновременно</h2></div>
-              <div class="match-count" id="matchCount">0 вариантов</div>
-            </div>
-            <p class="match-filter-note">Метраж включён всегда. Несколько выбранных цветов работают как «ИЛИ», а выбранные компоненты состава — как «И».</p>
-
-            <div class="match-filter-row is-fixed">
-              <label class="match-filter-toggle"><input type="checkbox" checked disabled><span>Метраж</span></label>
-              <div class="match-filter-body"><strong id="matchMeterageText">—</strong><small id="matchMeterageHint">Допуск ±10%, учитывается сложение одной и той же пряжи.</small></div>
-            </div>
-
-            <div class="match-filter-row">
-              <label class="match-filter-toggle"><input id="matchColorEnabled" type="checkbox"><span>Цвет</span></label>
-              <div class="match-filter-body">
-                <div id="matchColorOptions" class="filter-options" hidden></div>
-                <small id="matchColorHint">Список цветов появится из распарсенных карточек VK.</small>
-              </div>
-            </div>
-
-            <div class="match-filter-row">
-              <label class="match-filter-toggle"><input id="matchCompositionEnabled" type="checkbox"><span>Состав</span></label>
-              <div class="match-filter-body">
-                <div id="matchCompositionOptions" class="composition-filter-options" hidden></div>
-                <small id="matchCompositionHint">Выберите один или несколько компонентов состава. Для каждого можно задать минимальный процент.</small>
-              </div>
-            </div>
-          </section>
-
           <div class="product-grid" id="matchGrid"></div>
         </div>
       </section>
@@ -221,10 +222,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js"></script>
-  <script src="js/config.js?v=20261003-match07"></script>
-  <script src="js/data.js?v=20261003-match07"></script>
-  <script src="js/parser.js?v=20261003-match07"></script>
-  <script src="js/vk-catalog.js?v=20261003-match07"></script>
-  <script src="js/app.js?v=20261003-match07"></script>
+  <script src="js/config.js?v=20261003-match08"></script>
+  <script src="js/data.js?v=20261003-match08"></script>
+  <script src="js/parser.js?v=20261003-match08"></script>
+  <script src="js/vk-catalog.js?v=20261003-match08"></script>
+  <script src="js/app.js?v=20261003-match08"></script>
 </body>
 </html>
