@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261003-match06">
+  <link rel="stylesheet" href="assets/styles.css?v=20261003-match07">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -161,7 +161,23 @@
         <div class="section-head match-head"><div><span class="eyebrow">Шаг 3</span><h1>Подбор пряжи</h1><p>Каталог формируется автоматически из фотографий с меткой <b>#Манияпряжи</b> в разрешённом альбоме VK.</p></div><button class="ghost-btn tiny" id="refreshCatalogBtn" type="button">Обновить каталог</button></div>
         <div class="catalog-status" id="catalogStatus" aria-live="polite"><span class="status-dot"></span><span>Каталог ещё не загружен.</span></div>
 
-        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Сначала рассчитайте изделие</h3><p>После расчёта здесь появятся позиции, подходящие по рабочему метражу.</p><button class="secondary-btn" type="button" data-go="product">Перейти к изделию</button></div>
+        <section class="match-mode-card" aria-label="Режим подбора">
+          <div class="match-mode-copy"><span class="eyebrow">Режим подбора</span><h2>Можно подбирать и без расчёта изделия</h2><p>Для подбора по характеристикам достаточно указать нужный метраж. Цвет и состав можно подключить дополнительными фильтрами.</p></div>
+          <div class="match-mode-switch" role="group" aria-label="Выбор режима подбора">
+            <button class="match-mode-btn is-active" id="matchModeCharacteristics" type="button" data-match-mode="characteristics">По характеристикам</button>
+            <button class="match-mode-btn" id="matchModeProduct" type="button" data-match-mode="product">По расчёту изделия</button>
+          </div>
+          <div class="manual-match-input" id="manualMatchInput">
+            <label class="field"><span>Нужный метраж на 100 г</span><div class="input-unit"><input id="matchManualMeterage" type="number" min="1" step="1" inputmode="decimal" placeholder="например, 500"><b>м</b></div></label>
+            <small>Подбор учитывает допуск ±10% и сложение одной и той же пряжи в 1–6 нитей.</small>
+          </div>
+          <div class="product-match-source" id="productMatchSource" hidden>
+            <div id="productMatchSourceText">Сначала рассчитайте изделие во второй вкладке.</div>
+            <button class="secondary-btn tiny" type="button" data-go="product">Перейти к изделию</button>
+          </div>
+        </section>
+
+        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Укажите нужный метраж</h3><p>После этого покажем подходящую пряжу из каталога с учётом сложений.</p></div>
         <div id="matchContent" hidden>
           <div class="match-summary" id="matchSummary"></div>
 
@@ -205,10 +221,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js"></script>
-  <script src="js/config.js?v=20261003-match06"></script>
-  <script src="js/data.js?v=20261003-match06"></script>
-  <script src="js/parser.js?v=20261003-match06"></script>
-  <script src="js/vk-catalog.js?v=20261003-match06"></script>
-  <script src="js/app.js?v=20261003-match06"></script>
+  <script src="js/config.js?v=20261003-match07"></script>
+  <script src="js/data.js?v=20261003-match07"></script>
+  <script src="js/parser.js?v=20261003-match07"></script>
+  <script src="js/vk-catalog.js?v=20261003-match07"></script>
+  <script src="js/app.js?v=20261003-match07"></script>
 </body>
 </html>
