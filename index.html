@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261003-fix05">
+  <link rel="stylesheet" href="assets/styles.css?v=20261003-match06">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -158,12 +158,42 @@
       </section>
 
       <section class="view" id="view-match">
-        <div class="section-head match-head"><div><span class="eyebrow">Шаг 3</span><h1>Подбор пряжи</h1><p>Каталог формируется автоматически из отмеченных фотографий VK. Сейчас используется тестовый альбом и метка <b>#Калькулятор</b>.</p></div><button class="ghost-btn tiny" id="refreshCatalogBtn" type="button">Обновить каталог</button></div>
+        <div class="section-head match-head"><div><span class="eyebrow">Шаг 3</span><h1>Подбор пряжи</h1><p>Каталог формируется автоматически из фотографий с меткой <b>#Манияпряжи</b> в разрешённом альбоме VK.</p></div><button class="ghost-btn tiny" id="refreshCatalogBtn" type="button">Обновить каталог</button></div>
         <div class="catalog-status" id="catalogStatus" aria-live="polite"><span class="status-dot"></span><span>Каталог ещё не загружен.</span></div>
 
-        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Сначала рассчитайте изделие</h3><p>После расчёта здесь появятся позиции из каталога, близкие по рабочему метражу.</p><button class="secondary-btn" type="button" data-go="product">Перейти к изделию</button></div>
+        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Сначала рассчитайте изделие</h3><p>После расчёта здесь появятся позиции, подходящие по рабочему метражу.</p><button class="secondary-btn" type="button" data-go="product">Перейти к изделию</button></div>
         <div id="matchContent" hidden>
           <div class="match-summary" id="matchSummary"></div>
+
+          <section class="match-filter-card" aria-labelledby="matchFiltersTitle">
+            <div class="match-filter-head">
+              <div><span class="eyebrow">Условия подбора</span><h2 id="matchFiltersTitle">Фильтры работают одновременно</h2></div>
+              <div class="match-count" id="matchCount">0 вариантов</div>
+            </div>
+            <p class="match-filter-note">Метраж включён всегда. Несколько выбранных цветов работают как «ИЛИ», а выбранные компоненты состава — как «И».</p>
+
+            <div class="match-filter-row is-fixed">
+              <label class="match-filter-toggle"><input type="checkbox" checked disabled><span>Метраж</span></label>
+              <div class="match-filter-body"><strong id="matchMeterageText">—</strong><small id="matchMeterageHint">Допуск ±10%, учитывается сложение одной и той же пряжи.</small></div>
+            </div>
+
+            <div class="match-filter-row">
+              <label class="match-filter-toggle"><input id="matchColorEnabled" type="checkbox"><span>Цвет</span></label>
+              <div class="match-filter-body">
+                <div id="matchColorOptions" class="filter-options" hidden></div>
+                <small id="matchColorHint">Список цветов появится из распарсенных карточек VK.</small>
+              </div>
+            </div>
+
+            <div class="match-filter-row">
+              <label class="match-filter-toggle"><input id="matchCompositionEnabled" type="checkbox"><span>Состав</span></label>
+              <div class="match-filter-body">
+                <div id="matchCompositionOptions" class="composition-filter-options" hidden></div>
+                <small id="matchCompositionHint">Выберите один или несколько компонентов состава. Для каждого можно задать минимальный процент.</small>
+              </div>
+            </div>
+          </section>
+
           <div class="product-grid" id="matchGrid"></div>
         </div>
       </section>
@@ -175,10 +205,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js"></script>
-  <script src="js/config.js?v=20261003-fix05"></script>
-  <script src="js/data.js?v=20261003-fix05"></script>
-  <script src="js/parser.js?v=20261003-fix05"></script>
-  <script src="js/vk-catalog.js?v=20261003-fix05"></script>
-  <script src="js/app.js?v=20261003-fix05"></script>
+  <script src="js/config.js?v=20261003-match06"></script>
+  <script src="js/data.js?v=20261003-match06"></script>
+  <script src="js/parser.js?v=20261003-match06"></script>
+  <script src="js/vk-catalog.js?v=20261003-match06"></script>
+  <script src="js/app.js?v=20261003-match06"></script>
 </body>
 </html>
