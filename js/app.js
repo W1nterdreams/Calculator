@@ -40,7 +40,7 @@
 
   function icon(name){return `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;}
   function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));}
-  function numeric(v){const n=Number(String(v??'').replace(',','.'));return Number.isFinite(n)?n:null;}
+  function numeric(v){const raw=String(v??'').trim().replace(',','.');if(!raw)return null;const n=Number(raw);return Number.isFinite(n)?n:null;}
   function garment(){return D.garments.find(x=>x.id===state.garmentId)||D.garments[0];}
 
   function switchView(name){
@@ -135,10 +135,14 @@
 
   function updateMix(){
     state.mix=computeMix();
-    if(!state.mix){els.mixResult.innerHTML='<div class="mix-box"><div class="mix-top"><span>Итог рабочей нити</span><strong>Укажите метраж</strong></div></div>';return;}
+    if(!state.mix){
+      els.mixResult.innerHTML='<div class="mix-box"><div class="mix-top"><span>Итог рабочей нити</span><strong>Укажите метраж</strong></div></div>';
+      if(state.sample)renderSampleResult(state.sample,false);
+      return;
+    }
     const tags=state.mix.composition.map(x=>`<span class="mix-tag">${escapeHtml(x.material)} — ${fmt(x.percent,1)}%</span>`).join('');
     els.mixResult.innerHTML=`<div class="mix-box"><div class="mix-top"><span>Итоговый метраж · ${state.mix.totalStrands} ${state.mix.totalStrands===1?'нить':'нитей'}</span><strong>≈ ${fmt(state.mix.combinedMeterage)} м/100 г</strong></div><div class="mix-composition">${tags||'<span class="mix-tag">состав не указан</span>'}</div>${state.mix.warnings.length?`<div class="mix-warning">${state.mix.warnings.map(escapeHtml).join(' ')}</div>`:''}</div>`;
-    if(state.sample&&state.mix)renderSampleResult(state.sample,false);
+    if(state.sample)renderSampleResult(state.sample,false);
   }
 
   function updateCompositionTotal(y,card){
@@ -238,15 +242,27 @@
     showToast('Расчёт сброшен');
   }
 
+  function currentSampleTransferData(){
+    const stitches=numeric(els.sampleStitches.value),rows=numeric(els.sampleRows.value),width=numeric(els.sampleWidth.value),height=numeric(els.sampleHeight.value);
+    const gauge=stitches&&width&&stitches>0&&width>0?stitches/width*10:null;
+    const rowGauge=rows&&height&&rows>0&&height>0?rows/height*10:null;
+    const meterage=state.mix&&state.mix.combinedMeterage>0?state.mix.combinedMeterage:null;
+    return {gauge,rowGauge,meterage};
+  }
+
   function applySampleToProduct(){
-    if(!state.sample){showToast('Сначала внесите данные готового образца и рассчитайте плотность');return false;}
-    els.productGauge.value=round(state.sample.gauge,1);
-    els.productRowGauge.value=round(state.sample.rowGauge,1);
-    state.productGauge=state.sample.gauge;state.productRowGauge=state.sample.rowGauge;
-    if(state.mix){els.productMeterage.value=Math.round(state.mix.combinedMeterage);state.productMeterage=state.mix.combinedMeterage;}
-    updateGaugeHint();
-    els.sampleTransferStatus.textContent=`Использована плотность готового образца после ВТО: ${fmt(state.sample.gauge,1)} п./10 см и ${fmt(state.sample.rowGauge,1)} р./10 см${state.mix?`, рабочий метраж ≈ ${fmt(state.mix.combinedMeterage)} м/100 г`:''}.`;
-    switchView('product');showToast('Данные образца переданы');return true;
+    const source=currentSampleTransferData();
+    els.productGauge.value=source.gauge?round(source.gauge,1):'';
+    els.productRowGauge.value=source.rowGauge?round(source.rowGauge,1):'';
+    els.productMeterage.value=source.meterage?Math.round(source.meterage):'';
+    state.productGauge=source.gauge||null;state.productRowGauge=source.rowGauge||null;state.productMeterage=source.meterage||null;
+    state.product=null;els.productResultCard.hidden=true;els.productValidation.textContent='';renderMatches();updateGaugeHint();
+    const parts=[];
+    if(source.gauge)parts.push(`${fmt(source.gauge,1)} п./10 см`);
+    if(source.rowGauge)parts.push(`${fmt(source.rowGauge,1)} р./10 см`);
+    if(source.meterage)parts.push(`${fmt(source.meterage)} м/100 г`);
+    els.sampleTransferStatus.textContent=parts.length?`Из первого этапа перенесено: ${parts.join(', ')}.`:'В первом этапе нет заполненных данных — поля оставлены пустыми.';
+    switchView('product');showToast(parts.length?'Данные образца переданы':'Поля образца очищены');return true;
   }
 
   function renderGarments(){
@@ -357,7 +373,7 @@
   function updateDimensionSummary(){
     if(!els.productDimensionSummary)return;
     const g=garment(),d=readProductDimensions(),area=garmentArea(g,d);
-    els.productDimensionSummary.innerHTML=area>0?`<span>Расчётная площадь вязания</span><strong>≈ ${fmt(area)} см²</strong><small>до запаса 10%; используется площадь всех основных деталей</small>`:'';
+    els.productDimensionSummary.innerHTML=area>0?`<span>Расчётная площадь вязания</span><strong>≈ ${fmt(area)} см²</strong><small>Расчётная площадь указана БЕЗ запаса. Используется площадь ТОЛЬКО основных деталей.</small>`:'';
   }
 
   function estimateMetersPer100cm2(gauge,rowGauge){
@@ -536,11 +552,14 @@
     const removeYarn=e.target.closest('[data-remove-yarn]');if(removeYarn)removeYarnPreservePosition(removeYarn);
   });
   $('#calculateSampleBtn').addEventListener('click',calculateSample);els.resetSampleBtn.addEventListener('click',resetSampleCalculator);
+  [els.sampleStitches,els.sampleRows,els.sampleWidth,els.sampleHeight,els.sampleWeight].forEach(input=>input.addEventListener('input',()=>{
+    state.sample=null;els.sampleResultCard.hidden=true;els.sampleValidation.textContent='';
+  }));
   els.useSampleBtn.addEventListener('click',applySampleToProduct);els.pullSampleBtn.addEventListener('click',applySampleToProduct);
   els.garmentGrid.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b)return;state.garmentId=b.dataset.id;state.sizeIndex=Math.min(3,garment().sizes.length-1);state.productDims=null;renderGarments();renderSizes();els.productResultCard.hidden=true;state.product=null;renderMatches();});
   els.sizeChips.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;state.sizeIndex=Number(b.dataset.i);state.productDims=null;renderSizes();els.productResultCard.hidden=true;state.product=null;renderMatches();});
   els.productDimensionsFields.addEventListener('input',()=>{readProductDimensions();updateDimensionSummary();els.productResultCard.hidden=true;state.product=null;renderMatches();});
-  els.productGauge.addEventListener('input',updateGaugeHint);els.productRowGauge.addEventListener('input',updateGaugeHint);els.productMeterage.addEventListener('input',updateGaugeHint);
+  [els.productGauge,els.productRowGauge,els.productMeterage].forEach(input=>input.addEventListener('input',()=>{state.product=null;els.productResultCard.hidden=true;els.productValidation.textContent='';renderMatches();updateGaugeHint();}));
   $('#calculateProductBtn').addEventListener('click',calculateProduct);
   $('#goMatchBtn').addEventListener('click',()=>switchView('match'));$('#copyProductBtn').addEventListener('click',copyProduct);
   els.refreshCatalogBtn.addEventListener('click',()=>loadCatalogAndSync(true));

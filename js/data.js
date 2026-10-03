@@ -20,7 +20,7 @@
   const garments = [
     {id:'child_cardigan',name:'Детский жакет',icon:'cardigan',child:true,sex:'child',geometry:'torso',variant:'cardigan',ease:8,sizes:childSizes},
     {id:'child_pullover',name:'Детский пуловер',icon:'pullover',child:true,sex:'child',geometry:'torso',variant:'pullover',ease:6,sizes:childSizes},
-    {id:'child_sweater',name:'Детский свитер',icon:'pullover',child:true,sex:'child',geometry:'torso',variant:'sweater',ease:8,sizes:childSizes},
+    {id:'child_sweater',name:'Детский свитер',icon:'sweater',child:true,sex:'child',geometry:'torso',variant:'sweater',ease:8,sizes:childSizes},
     {id:'child_vest',name:'Детский жилет',icon:'vest',child:true,sex:'child',geometry:'torso',variant:'vest',ease:6,sizes:childSizes},
     {id:'child_socks',name:'Детские носки',icon:'socks',child:true,geometry:'socks',sizes:[
       {label:'20–22',foot:14,circ:15,leg:12},{label:'23–25',foot:16,circ:16,leg:14},{label:'26–28',foot:18,circ:17,leg:15},
@@ -29,12 +29,12 @@
 
     {id:'women_cardigan',name:'Женский жакет',icon:'cardigan',sex:'women',geometry:'torso',variant:'cardigan',ease:12,sizes:adultSizes(40,66,164)},
     {id:'women_pullover',name:'Женский пуловер',icon:'pullover',sex:'women',geometry:'torso',variant:'pullover',ease:8,sizes:adultSizes(40,66,164)},
-    {id:'women_sweater',name:'Женский свитер',icon:'pullover',sex:'women',geometry:'torso',variant:'sweater',ease:10,sizes:adultSizes(40,66,164)},
+    {id:'women_sweater',name:'Женский свитер',icon:'sweater',sex:'women',geometry:'torso',variant:'sweater',ease:10,sizes:adultSizes(40,66,164)},
     {id:'women_vest',name:'Женский жилет',icon:'vest',sex:'women',geometry:'torso',variant:'vest',ease:6,sizes:adultSizes(40,66,164)},
 
     {id:'men_cardigan',name:'Мужской жакет',icon:'cardigan',sex:'men',geometry:'torso',variant:'cardigan',ease:14,sizes:adultSizes(42,66,176)},
     {id:'men_pullover',name:'Мужской пуловер',icon:'pullover',sex:'men',geometry:'torso',variant:'pullover',ease:10,sizes:adultSizes(42,66,176)},
-    {id:'men_sweater',name:'Мужской свитер',icon:'pullover',sex:'men',geometry:'torso',variant:'sweater',ease:12,sizes:adultSizes(42,66,176)},
+    {id:'men_sweater',name:'Мужской свитер',icon:'sweater',sex:'men',geometry:'torso',variant:'sweater',ease:12,sizes:adultSizes(42,66,176)},
     {id:'men_vest',name:'Мужской жилет',icon:'vest',sex:'men',geometry:'torso',variant:'vest',ease:8,sizes:adultSizes(42,66,176)},
 
     {id:'hat',name:'Шапка',icon:'hat',geometry:'hat',sizes:[
