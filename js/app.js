@@ -33,7 +33,7 @@
   const els={
     consentScreen:$('#consentScreen'),app:$('#app'),consentBtn:$('#consentBtn'),vkState:$('#vkState'),toast:$('#toast'),
     yarnComponents:$('#yarnComponents'),addYarnBtn:$('#addYarnBtn'),mixResult:$('#mixResult'),resetSampleBtn:$('#resetSampleBtn'),
-    beforeStitches:$('#beforeStitches'),beforeRows:$('#beforeRows'),beforeWidth:$('#beforeWidth'),beforeHeight:$('#beforeHeight'),sampleWeight:$('#sampleWeight'),afterWidth:$('#afterWidth'),afterHeight:$('#afterHeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),beforeGaugeResult:$('#beforeGaugeResult'),beforeRowsResult:$('#beforeRowsResult'),afterGaugeResult:$('#afterGaugeResult'),afterRowsResult:$('#afterRowsResult'),widthChangeResult:$('#widthChangeResult'),widthChangeText:$('#widthChangeText'),heightChangeResult:$('#heightChangeResult'),heightChangeText:$('#heightChangeText'),areaConsumptionResult:$('#areaConsumptionResult'),areaConsumptionHint:$('#areaConsumptionHint'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
+    sampleStitches:$('#sampleStitches'),sampleRows:$('#sampleRows'),sampleWidth:$('#sampleWidth'),sampleHeight:$('#sampleHeight'),sampleWeight:$('#sampleWeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),sampleGaugeResult:$('#sampleGaugeResult'),sampleRowsGaugeResult:$('#sampleRowsGaugeResult'),areaConsumptionResult:$('#areaConsumptionResult'),areaConsumptionHint:$('#areaConsumptionHint'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
     sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productDimensionsCard:$('#productDimensionsCard'),productDimensionsFields:$('#productDimensionsFields'),productDimensionsHint:$('#productDimensionsHint'),productDimensionSummary:$('#productDimensionSummary'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
     refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid')
   };
@@ -70,8 +70,8 @@
 
   function compositionPairHtml(part,i){
     return `<div class="composition-pair">
-      <div class="percent-input"><input data-comp-index="${i}" data-comp-field="percent" type="number" min="0" max="100" step="1" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(part.percent)}" placeholder="%"><span>%</span></div>
-      <input class="material-input" data-comp-index="${i}" data-comp-field="material" type="text" value="${escapeHtml(part.material)}" placeholder="меринос">
+      <div class="percent-input"><input data-comp-index="${i}" data-comp-field="percent" type="number" min="0" max="100" step="1" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(part.percent)}" placeholder="например, 70"><span>%</span></div>
+      <input class="material-input" data-comp-index="${i}" data-comp-field="material" type="text" value="${escapeHtml(part.material)}" placeholder="например, меринос">
     </div>`;
   }
 
@@ -87,8 +87,8 @@
       return `<article class="yarn-component" data-yarn-id="${y.id}">
         <div class="yarn-component-head"><h3>Нить ${index+1}</h3>${state.yarns.length>1?'<button class="remove-yarn" type="button" data-remove-yarn>Убрать</button>':''}</div>
         <div class="component-fields">
-          <label class="field"><span>Длина</span><div class="input-unit"><input data-yarn-field="meters" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.meters)}" placeholder="1500"><b>м</b></div></label>
-          <label class="field"><span>Вес</span><div class="input-unit"><input data-yarn-field="weight" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.weight)}" placeholder="100"><b>г</b></div></label>
+          <label class="field"><span>Длина</span><div class="input-unit"><input data-yarn-field="meters" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.meters)}" placeholder="например, 1500"><b>м</b></div></label>
+          <label class="field"><span>Вес</span><div class="input-unit"><input data-yarn-field="weight" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.weight)}" placeholder="например, 100"><b>г</b></div></label>
         </div>
         <div class="component-composition">
           <div class="composition-heading"><label>Состав · до 6 компонентов</label><span class="composition-total ${total.ok?'is-ok':'is-warn'}">Итого: ${fmt(total.sum,0)}%</span></div>
@@ -168,37 +168,27 @@
   }
 
   function calculateSample(){
-    const stitches=numeric(els.beforeStitches.value),rows=numeric(els.beforeRows.value),bw=numeric(els.beforeWidth.value),bh=numeric(els.beforeHeight.value),weight=numeric(els.sampleWeight.value),aw=numeric(els.afterWidth.value),ah=numeric(els.afterHeight.value);
-    if(!stitches||stitches<=0||!rows||rows<=0||!bw||bw<=0||!bh||bh<=0||!aw||aw<=0||!ah||ah<=0){els.sampleValidation.textContent='Заполните количество петель и рядов, а также размеры образца до и после ВТО. Вес можно не указывать.';return null;}
+    const stitches=numeric(els.sampleStitches.value),rows=numeric(els.sampleRows.value),width=numeric(els.sampleWidth.value),height=numeric(els.sampleHeight.value),weight=numeric(els.sampleWeight.value);
+    if(!stitches||stitches<=0||!rows||rows<=0||!width||width<=0||!height||height<=0){
+      els.sampleValidation.textContent='Заполните количество петель и рядов, ширину и высоту готового образца после ВТО. Вес можно не указывать.';
+      return null;
+    }
     els.sampleValidation.textContent='';
-    const beforeGauge=stitches/bw*10,beforeRowGauge=rows/bh*10,afterGauge=stitches/aw*10,afterRowGauge=rows/ah*10;
-    const widthChange=(aw-bw)/bw*100,heightChange=(ah-bh)/bh*100;
-    const beforeArea=bw*bh,afterArea=aw*ah;
+    const gauge=stitches/width*10,rowGauge=rows/height*10,area=width*height;
     const safeWeight=weight&&weight>0?weight:null;
-    const gramsPer100cm2=safeWeight?safeWeight/afterArea*100:null;
+    const gramsPer100cm2=safeWeight?safeWeight/area*100:null;
     const metersUsed=safeWeight&&state.mix?safeWeight/100*state.mix.combinedMeterage:null;
-    state.sample={stitches,rows,bw,bh,weight:safeWeight,aw,ah,beforeGauge,beforeRowGauge,afterGauge,afterRowGauge,widthChange,heightChange,beforeArea,afterArea,gramsPer100cm2,metersUsed};
+    state.sample={stitches,rows,width,height,weight:safeWeight,gauge,rowGauge,area,gramsPer100cm2,metersUsed};
     renderSampleResult(state.sample,true);return state.sample;
-  }
-
-  function changeText(v,axis){
-    const a=Math.abs(v);if(a<0.05)return `${axis} почти не изменилась`;
-    return v>0?`${axis} увеличилась на ${fmt(a,1)}%`:`${axis} уменьшилась на ${fmt(a,1)}%`;
   }
 
   function renderSampleResult(r,shouldScroll=true){
     els.sampleResultCard.hidden=false;
-    els.beforeGaugeResult.textContent=`${fmt(r.beforeGauge,1)} п./10 см`;
-    els.beforeRowsResult.textContent=`${fmt(r.beforeRowGauge,1)} р./10 см`;
-    els.afterGaugeResult.textContent=`${fmt(r.afterGauge,1)} п./10 см`;
-    els.afterRowsResult.textContent=`${fmt(r.afterRowGauge,1)} р./10 см`;
-    els.widthChangeResult.textContent=`${r.widthChange>=0?'+':''}${fmt(r.widthChange,1)}%`;
-    els.widthChangeText.textContent=changeText(r.widthChange,'Ширина');
-    els.heightChangeResult.textContent=`${r.heightChange>=0?'+':''}${fmt(r.heightChange,1)}%`;
-    els.heightChangeText.textContent=changeText(r.heightChange,'Высота');
+    els.sampleGaugeResult.textContent=`${fmt(r.gauge,1)} п./10 см`;
+    els.sampleRowsGaugeResult.textContent=`${fmt(r.rowGauge,1)} р./10 см`;
     if(r.gramsPer100cm2){
       els.areaConsumptionResult.textContent=`${fmt(r.gramsPer100cm2,2)} г/100 см²`;
-      if(els.areaConsumptionHint)els.areaConsumptionHint.textContent='по размеру после ВТО';
+      if(els.areaConsumptionHint)els.areaConsumptionHint.textContent='по готовому образцу после ВТО';
     }else{
       els.areaConsumptionResult.textContent='не рассчитан';
       if(els.areaConsumptionHint)els.areaConsumptionHint.textContent='вес образца не указан';
@@ -217,19 +207,19 @@
 
   function resetSampleCalculator(){
     state.yarns=[newYarn(1)];state.nextYarnId=2;state.mix=null;state.sample=null;
-    [els.beforeStitches,els.beforeRows,els.beforeWidth,els.beforeHeight,els.sampleWeight,els.afterWidth,els.afterHeight].forEach(input=>{input.value='';});
+    [els.sampleStitches,els.sampleRows,els.sampleWidth,els.sampleHeight,els.sampleWeight].forEach(input=>{input.value='';});
     els.sampleValidation.textContent='';els.sampleResultCard.hidden=true;renderYarns();
     showToast('Расчёт сброшен');
   }
 
   function applySampleToProduct(){
-    if(!state.sample){showToast('Сначала рассчитайте образец');return false;}
-    els.productGauge.value=round(state.sample.afterGauge,1);
-    els.productRowGauge.value=round(state.sample.afterRowGauge,1);
-    state.productGauge=state.sample.afterGauge;state.productRowGauge=state.sample.afterRowGauge;
+    if(!state.sample){showToast('Сначала внесите данные готового образца и рассчитайте плотность');return false;}
+    els.productGauge.value=round(state.sample.gauge,1);
+    els.productRowGauge.value=round(state.sample.rowGauge,1);
+    state.productGauge=state.sample.gauge;state.productRowGauge=state.sample.rowGauge;
     if(state.mix){els.productMeterage.value=Math.round(state.mix.combinedMeterage);state.productMeterage=state.mix.combinedMeterage;}
     updateGaugeHint();
-    els.sampleTransferStatus.textContent=`Использована плотность после ВТО: ${fmt(state.sample.afterGauge,1)} п./10 см и ${fmt(state.sample.afterRowGauge,1)} р./10 см${state.mix?`, рабочий метраж ≈ ${fmt(state.mix.combinedMeterage)} м/100 г`:''}.`;
+    els.sampleTransferStatus.textContent=`Использована плотность готового образца после ВТО: ${fmt(state.sample.gauge,1)} п./10 см и ${fmt(state.sample.rowGauge,1)} р./10 см${state.mix?`, рабочий метраж ≈ ${fmt(state.mix.combinedMeterage)} м/100 г`:''}.`;
     switchView('product');showToast('Данные образца переданы');return true;
   }
 
@@ -368,7 +358,7 @@
     els.productValidation.textContent='';
     const range=meterRangeForGauge(clamp(gauge,8,30));
     const hasSampleWeight=!!(state.sample&&state.sample.gramsPer100cm2);
-    const sampleGaugeMatches=hasSampleWeight&&Math.abs(state.sample.afterGauge-gauge)/gauge<=.04;
+    const sampleGaugeMatches=hasSampleWeight&&Math.abs(state.sample.gauge-gauge)/gauge<=.04;
     const sampleMeterageMatches=hasSampleWeight&&state.mix&&Math.abs(state.mix.combinedMeterage-meterage)/meterage<=.04;
     let requiredMeters,rawGrams,method,metersPer100cm2;
     if(hasSampleWeight&&sampleGaugeMatches&&sampleMeterageMatches){
