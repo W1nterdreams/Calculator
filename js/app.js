@@ -10,7 +10,7 @@
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const round=(n,d=1)=>Math.round(n*Math.pow(10,d))/Math.pow(10,d);
 
-  function blankComposition(){return Array.from({length:6},()=>({percent:'',material:''}));}
+  function blankComposition(){return [{percent:'',material:''}];}
   function newYarn(id){return {id,meters:'',weight:'',compositionParts:blankComposition()};}
 
   const state={
@@ -56,8 +56,8 @@
 
   function normalizeCompositionParts(y){
     if(!Array.isArray(y.compositionParts))y.compositionParts=[];
-    while(y.compositionParts.length<6)y.compositionParts.push({percent:'',material:''});
     y.compositionParts=y.compositionParts.slice(0,6).map(x=>({percent:x?.percent??'',material:x?.material??''}));
+    if(!y.compositionParts.length)y.compositionParts.push({percent:'',material:''});
     return y.compositionParts;
   }
 
@@ -68,10 +68,11 @@
     return {parts:clean,sum};
   }
 
-  function compositionPairHtml(part,i){
-    return `<div class="composition-pair">
+  function compositionPairHtml(part,i,total){
+    return `<div class="composition-pair" data-comp-row="${i}">
       <div class="percent-input"><input data-comp-index="${i}" data-comp-field="percent" type="number" min="0" max="100" step="1" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(part.percent)}" placeholder=""><span>%</span></div>
       <input class="material-input" data-comp-index="${i}" data-comp-field="material" type="text" value="${escapeHtml(part.material)}" placeholder="например, меринос">
+      ${total>1?`<button class="remove-composition" type="button" data-remove-composition="${i}" aria-label="Убрать компонент">×</button>`:''}
     </div>`;
   }
 
@@ -91,9 +92,10 @@
           <label class="field"><span>Вес</span><div class="input-unit"><input data-yarn-field="weight" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.weight)}" placeholder="например, 100"><b>г</b></div></label>
         </div>
         <div class="component-composition">
-          <div class="composition-heading"><label>Состав · до 6 компонентов</label><span class="composition-total ${total.ok?'is-ok':'is-warn'}">Итого: ${fmt(total.sum,0)}%</span></div>
-          <div class="composition-pairs">${parts.map(compositionPairHtml).join('')}</div>
-          <div class="component-hint">В каждой паре укажите процент и сырьё. Сумма компонентов одной нити должна быть 100%.</div>
+          <div class="composition-heading"><label>Состав</label><span class="composition-total ${total.ok?'is-ok':'is-warn'}">Итого: ${fmt(total.sum,0)}%</span></div>
+          <div class="composition-pairs">${parts.map((part,i)=>compositionPairHtml(part,i,parts.length)).join('')}</div>
+          ${parts.length<6?'<button class="ghost-btn add-composition-btn" type="button" data-add-composition>+ Добавить компонент</button>':'<div class="component-limit">Добавлено максимум 6 компонентов</div>'}
+          <div class="component-hint">Укажите процент и сырьё. Если в составе есть ещё компонент — добавьте его кнопкой «+». Сумма должна быть 100%.</div>
         </div>
       </article>`;
     }).join('');
@@ -150,9 +152,33 @@
     const field=target.dataset.yarnField;
     if(field){y[field]=target.value;updateMix();return;}
     const compIndex=Number(target.dataset.compIndex),compField=target.dataset.compField;
-    if(Number.isInteger(compIndex)&&compIndex>=0&&compIndex<6&&(compField==='percent'||compField==='material')){
-      const parts=normalizeCompositionParts(y);parts[compIndex][compField]=target.value;updateCompositionTotal(y,card);updateMix();
+    const parts=normalizeCompositionParts(y);
+    if(Number.isInteger(compIndex)&&compIndex>=0&&compIndex<parts.length&&(compField==='percent'||compField==='material')){
+      parts[compIndex][compField]=target.value;updateCompositionTotal(y,card);updateMix();
     }
+  }
+
+  function rerenderYarnsKeepScroll(){
+    const oldY=window.scrollY;
+    renderYarns();
+    requestAnimationFrame(()=>window.scrollTo({top:oldY,left:0,behavior:'auto'}));
+  }
+
+  function addComposition(button){
+    const card=button.closest('[data-yarn-id]');if(!card)return;
+    const y=state.yarns.find(x=>x.id===Number(card.dataset.yarnId));if(!y)return;
+    const parts=normalizeCompositionParts(y);if(parts.length>=6)return;
+    parts.push({percent:'',material:''});
+    rerenderYarnsKeepScroll();
+  }
+
+  function removeComposition(button){
+    const card=button.closest('[data-yarn-id]');if(!card)return;
+    const y=state.yarns.find(x=>x.id===Number(card.dataset.yarnId));if(!y)return;
+    const parts=normalizeCompositionParts(y);const index=Number(button.dataset.removeComposition);
+    if(parts.length<=1||!Number.isInteger(index)||index<0||index>=parts.length)return;
+    parts.splice(index,1);
+    rerenderYarnsKeepScroll();
   }
 
   function removeYarnPreservePosition(button){
@@ -504,7 +530,11 @@
   $$('[data-go]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.go)));
   els.addYarnBtn.addEventListener('click',()=>{if(state.yarns.length>=5)return;state.yarns.push(newYarn(state.nextYarnId++));renderYarns();});
   els.yarnComponents.addEventListener('input',e=>readYarnInput(e.target));
-  els.yarnComponents.addEventListener('click',e=>{const b=e.target.closest('[data-remove-yarn]');if(!b)return;removeYarnPreservePosition(b);});
+  els.yarnComponents.addEventListener('click',e=>{
+    const add=e.target.closest('[data-add-composition]');if(add){addComposition(add);return;}
+    const removeComp=e.target.closest('[data-remove-composition]');if(removeComp){removeComposition(removeComp);return;}
+    const removeYarn=e.target.closest('[data-remove-yarn]');if(removeYarn)removeYarnPreservePosition(removeYarn);
+  });
   $('#calculateSampleBtn').addEventListener('click',calculateSample);els.resetSampleBtn.addEventListener('click',resetSampleCalculator);
   els.useSampleBtn.addEventListener('click',applySampleToProduct);els.pullSampleBtn.addEventListener('click',applySampleToProduct);
   els.garmentGrid.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b)return;state.garmentId=b.dataset.id;state.sizeIndex=Math.min(3,garment().sizes.length-1);state.productDims=null;renderGarments();renderSizes();els.productResultCard.hidden=true;state.product=null;renderMatches();});
