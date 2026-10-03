@@ -641,20 +641,24 @@
 
   function renderMatches(){
     renderMatchMode();
+    renderMatchFilterOptions();
+    const tolPct=Math.round(matchTolerance()*100);
     const ctx=matchContext();
     if(!ctx){
+      els.matchMeterageText.textContent=state.matchMode==='product'?'Нет расчёта изделия':'Укажите метраж';
+      els.matchMeterageHint.textContent=`Допуск ±${tolPct}%, проверяем 1–${maxMatchPlies()} сложений одной и той же пряжи.`;
+      els.matchCount.textContent='0 вариантов';
       els.matchEmpty.hidden=false;els.matchContent.hidden=true;
       if(state.matchMode==='product'){
         els.matchEmpty.querySelector('h3').textContent='Сначала рассчитайте изделие';
-        els.matchEmpty.querySelector('p').textContent='Либо переключитесь на «По характеристикам» и укажите нужный метраж вручную.';
+        els.matchEmpty.querySelector('p').textContent='Либо переключитесь на «По характеристикам» и задайте метраж, цвет и состав вручную.';
       }else{
         els.matchEmpty.querySelector('h3').textContent='Укажите нужный метраж';
-        els.matchEmpty.querySelector('p').textContent='После этого покажем подходящую пряжу из каталога с учётом сложений.';
+        els.matchEmpty.querySelector('p').textContent='Цвет и состав можно выбрать уже сейчас. После ввода метража покажем подходящую пряжу с учётом сложений.';
       }
       return;
     }
     els.matchEmpty.hidden=true;els.matchContent.hidden=false;
-    const tolPct=Math.round(matchTolerance()*100);
     if(ctx.mode==='product'){
       const r=ctx.product;
       const densityText=r.gauge?`плотность ${fmt(r.gauge,1)} п./10 см`:`плотность не указана`;
@@ -664,7 +668,6 @@
     }
     els.matchMeterageText.textContent=`${fmt(ctx.target)} м/100 г · допуск ±${tolPct}%`;
     els.matchMeterageHint.textContent=`Проверяем 1–${maxMatchPlies()} сложений одной и той же пряжи.`;
-    renderMatchFilterOptions();
 
     const rows=state.vkCatalog.map(p=>{
       const b=scoreProduct(p,ctx.target);if(!b)return null;
