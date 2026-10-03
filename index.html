@@ -110,39 +110,31 @@
       <section class="view" id="view-product">
         <div class="section-head"><div><span class="eyebrow">Шаг 2</span><h1>Калькулятор изделия</h1><p>Используйте параметры своего образца или введите плотность и рабочий метраж вручную.</p></div></div>
 
-        <section class="step-card transfer-card">
-          <div><h2>Данные образца</h2><p id="sampleTransferStatus">Можно внести значения вручную.</p></div>
-          <button class="secondary-btn" id="pullSampleBtn" type="button">Взять из образца</button>
+        <section class="step-card product-sample-card">
+          <div class="step-title"><span>1</span><div><h2>Данные образца</h2><p id="sampleTransferStatus">Введите данные вручную или возьмите их из первого этапа. Плотность можно не указывать — тогда расчёт будет менее точным.</p></div></div>
+          <div class="product-sample-inputs">
+            <label class="field"><span>Петли <em class="optional-mark">необязательно</em></span><div class="input-unit"><input id="productGauge" type="number" min="8" max="40" step="0.1" inputmode="decimal" placeholder="например, 20"><b>п./10 см</b></div></label>
+            <label class="field"><span>Ряды <em class="optional-mark">необязательно</em></span><div class="input-unit"><input id="productRowGauge" type="number" min="1" step="0.1" inputmode="decimal" placeholder="например, 28"><b>р./10 см</b></div></label>
+            <label class="field"><span>Метраж</span><div class="input-unit"><input id="productMeterage" type="number" min="1" step="1" inputmode="decimal" placeholder="например, 280"><b>м/100 г</b></div></label>
+          </div>
+          <div class="meter-hint" id="gaugeHint"></div>
+          <button class="secondary-btn product-pull-btn" id="pullSampleBtn" type="button">Взять данные из образца</button>
         </section>
 
         <section class="step-card">
-          <div class="step-title"><span>1</span><div><h2>Изделие</h2><p>Выберите тип изделия.</p></div></div>
+          <div class="step-title"><span>2</span><div><h2>Изделие</h2><p>Выберите тип изделия.</p></div></div>
           <div class="garment-grid" id="garmentGrid"></div>
         </section>
 
         <section class="step-card">
-          <div class="step-title"><span>2</span><div><h2>Размер</h2><p id="sizeHint">Выберите изделие, чтобы увидеть доступные размеры.</p></div></div>
+          <div class="step-title"><span>3</span><div><h2>Размер</h2><p id="sizeHint">Выберите изделие, чтобы увидеть доступные размеры.</p></div></div>
           <div class="chip-row" id="sizeChips"></div>
         </section>
 
         <section class="step-card" id="productDimensionsCard">
-          <div class="step-title"><span>3</span><div><h2>Размеры расчётной модели</h2><p id="productDimensionsHint">Размеры подставляются из выбранного российского размера. Их можно уточнить в сантиметрах под конкретную модель.</p></div></div>
+          <div class="step-title"><span>4</span><div><h2>Размеры расчётной модели</h2><p id="productDimensionsHint">Размеры подставляются из выбранного российского размера. Их можно уточнить в сантиметрах под конкретную модель.</p></div></div>
           <div class="dimension-grid" id="productDimensionsFields"></div>
           <div class="dimension-summary" id="productDimensionSummary"></div>
-        </section>
-
-        <section class="step-card compact-grid">
-          <div class="input-block">
-            <div class="step-title small"><span>4</span><div><h2>Плотность</h2><p>Фактическое количество петель в 10 см после ВТО.</p></div></div>
-            <div class="number-with-unit wide"><input id="productGauge" type="number" min="8" max="30" step="0.1" value="20" inputmode="decimal"><span>п./10 см</span></div>
-            <label class="mini-field"><span>Ряды (справочно)</span><div class="input-unit"><input id="productRowGauge" type="number" min="1" step="0.1" inputmode="decimal" placeholder="необязательно"><b>р./10 см</b></div></label>
-            <div class="meter-hint" id="gaugeHint"></div>
-          </div>
-          <div class="input-block">
-            <div class="step-title small"><span>5</span><div><h2>Рабочий метраж</h2><p>Метраж уже готовой нити, которой будет связано изделие.</p></div></div>
-            <div class="number-with-unit wide"><input id="productMeterage" type="number" min="1" step="1" value="280" inputmode="decimal"><span>м/100 г</span></div>
-            <p class="input-footnote">Если вы соединяете несколько нитей, итоговый метраж можно рассчитать во вкладке «Образец».</p>
-          </div>
         </section>
 
         <button class="primary-btn" id="calculateProductBtn" type="button">Рассчитать расход</button>
