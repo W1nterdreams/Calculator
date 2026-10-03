@@ -367,3 +367,25 @@ body{
   .composition-pair input{height:39px}
   .remove-composition{width:32px;height:32px;font-size:19px}
 }
+
+/* 20261003 match06 — VK catalog filters and stock status */
+.match-filter-card{margin-top:14px;padding:18px 20px;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 5px 18px rgba(70,40,120,.05)}
+.match-filter-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.match-filter-head h2{margin:4px 0 0;font-size:20px;color:var(--accent-deep)}
+.match-count{flex:0 0 auto;padding:7px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent-deep);font-size:11px;font-weight:900}
+.match-filter-note{margin:8px 0 14px;color:var(--muted);font-size:12px;line-height:1.45}
+.match-filter-row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:13px 0;border-top:1px solid var(--line)}
+.match-filter-row.is-fixed{background:linear-gradient(90deg,rgba(241,234,255,.55),transparent);margin:0 -10px;padding:13px 10px;border-radius:14px}
+.match-filter-toggle{display:flex;align-items:center;gap:9px;font-weight:800;color:#4f3b70;cursor:pointer;min-height:34px}
+.match-filter-toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.match-filter-toggle input:disabled{opacity:1}
+.match-filter-body{min-width:0}.match-filter-body>strong{display:block;color:var(--accent-deep);font-size:15px;margin:1px 0 3px}.match-filter-body>small{display:block;color:var(--muted);font-size:11.5px;line-height:1.4}
+.filter-options{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:5px}.filter-chip{position:relative;cursor:pointer}.filter-chip input{position:absolute;opacity:0;pointer-events:none}.filter-chip span{display:block;padding:7px 10px;border-radius:10px;background:#f4f0fa;border:1px solid #e8def5;color:#655778;font-size:11.5px;font-weight:800}.filter-chip input:checked+span{background:var(--accent-soft);border-color:#cdb5f8;color:var(--accent-deep);box-shadow:0 0 0 2px rgba(123,73,228,.06)}
+.filter-empty{font-size:11.5px;color:var(--muted);padding:5px 0}
+.composition-filter-options{display:grid;gap:7px;margin-bottom:5px}.composition-filter-item{display:grid;grid-template-columns:minmax(150px,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#faf8fd}.composition-filter-item>label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:#5a496f;cursor:pointer}.composition-filter-item>label input{width:16px;height:16px;accent-color:var(--accent)}
+.composition-min{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:10.5px}.composition-min.is-disabled{opacity:.45}.percent-filter{display:flex;align-items:center;border:1px solid var(--line);background:#fff;border-radius:9px;overflow:hidden}.percent-filter input{width:54px;border:0;outline:0;padding:6px 4px 6px 8px;text-align:right;background:transparent;color:var(--text);font-size:12px}.percent-filter b{padding-right:7px;font-size:10px;color:var(--muted)}
+.meterage-match{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:13px;padding:11px 12px;background:linear-gradient(180deg,#f6f0ff,#fbf9ff);border:1px solid #e4d7f8;border-radius:15px}.meterage-match span,.meterage-match small{display:block;color:var(--muted);font-size:10px}.meterage-match b{display:block;color:var(--accent-deep);font-size:14px;margin-top:2px}.meterage-match small{margin-top:2px}.match-arrow{color:#9c80d3;font-weight:900;font-size:18px}
+.stock-state{margin-top:11px;padding:10px 12px;border-radius:13px;display:flex;justify-content:space-between;gap:10px;align-items:center}.stock-state span{font-size:10.5px}.stock-state b{font-size:12px}.stock-state.enough{background:var(--good-bg);color:var(--good)}.stock-state.shortage{background:var(--warn-bg);color:var(--warn)}.stock-state.neutral{background:#f3f3f7;color:#6d7080}
+.match-no-results{grid-column:1/-1;margin-top:0}
+@media(max-width:760px){.match-filter-row{grid-template-columns:1fr;gap:7px}.composition-filter-item{grid-template-columns:1fr}.composition-min{justify-content:flex-start}.match-filter-card{padding:16px}.meterage-match{grid-template-columns:1fr auto 1fr}}
+@media(max-width:520px){.match-filter-head{display:block}.match-count{display:inline-flex;margin-top:8px}.composition-filter-item{padding:8px}.meterage-match{gap:5px;padding:10px}.meterage-match b{font-size:12.5px}.stock-state{align-items:flex-start;flex-direction:column;gap:3px}}
