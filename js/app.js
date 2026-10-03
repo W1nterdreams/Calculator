@@ -28,6 +28,8 @@
     vkCatalog:[],
     vkMeta:null,
     catalogStarted:false,
+    matchMode:'characteristics',
+    matchManualMeterage:'',
     matchFilters:{colorEnabled:false,colors:[],compositionEnabled:false,materials:{}}
   };
 
@@ -37,7 +39,8 @@
     sampleStitches:$('#sampleStitches'),sampleRows:$('#sampleRows'),sampleWidth:$('#sampleWidth'),sampleHeight:$('#sampleHeight'),sampleWeight:$('#sampleWeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),sampleGaugeResult:$('#sampleGaugeResult'),sampleRowsGaugeResult:$('#sampleRowsGaugeResult'),areaConsumptionResult:$('#areaConsumptionResult'),areaConsumptionHint:$('#areaConsumptionHint'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
     sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productDimensionsCard:$('#productDimensionsCard'),productDimensionsFields:$('#productDimensionsFields'),productDimensionsHint:$('#productDimensionsHint'),productDimensionSummary:$('#productDimensionSummary'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
     refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid'),
-    matchCount:$('#matchCount'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint')
+    matchCount:$('#matchCount'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),
+    matchModeCharacteristics:$('#matchModeCharacteristics'),matchModeProduct:$('#matchModeProduct'),manualMatchInput:$('#manualMatchInput'),matchManualMeterage:$('#matchManualMeterage'),productMatchSource:$('#productMatchSource'),productMatchSourceText:$('#productMatchSourceText')
   };
 
   function icon(name){return `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;}
@@ -578,14 +581,23 @@
     if(p.shade)tags.push(`Оттенок: ${p.shade}`);
     const visual=p.thumbUrl?`<img class="product-thumb" src="${escapeHtml(p.thumbUrl)}" alt="" loading="lazy" decoding="async">`:'<div class="yarn-swatch"></div>';
     const meta=[p.albumTitle,p.country].filter(Boolean).join(' · ')||'Каталог VK';
-    const need=match.needGrams;
+    const hasNeed=Number.isFinite(match.needGrams)&&match.needGrams>0;
+    const need=hasNeed?match.needGrams:null;
     const stock=p.stockGrams;
-    let stockHtml='<div class="stock-state neutral"><span>Остаток в карточке</span><b>не указан</b></div>';
-    if(stock!=null){
-      const delta=stock-need;
-      stockHtml=delta>=0
-        ?`<div class="stock-state enough"><span>Пряжи хватает</span><b>Останется ≈ ${fmt(delta)} г</b></div>`
-        :`<div class="stock-state shortage"><span>Пряжи не хватает</span><b>Не хватает ≈ ${fmt(Math.abs(delta))} г</b></div>`;
+    let stockHtml='';
+    let statsHtml='';
+    if(hasNeed){
+      let stockState='<div class="stock-state neutral"><span>Остаток в карточке</span><b>не указан</b></div>';
+      if(stock!=null){
+        const delta=stock-need;
+        stockState=delta>=0
+          ?`<div class="stock-state enough"><span>Пряжи хватает</span><b>Останется ≈ ${fmt(delta)} г</b></div>`
+          :`<div class="stock-state shortage"><span>Пряжи не хватает</span><b>Не хватает ≈ ${fmt(Math.abs(delta))} г</b></div>`;
+      }
+      statsHtml=`<div class="product-stats"><div><span>Нужно с запасом</span><b>≈ ${fmt(need)} г</b></div><div><span>В карточке</span><b>${stock==null?'—':`${fmt(stock)} г`}</b></div>${p.pricePer100g?`<div><span>Ориентировочная стоимость</span><b>≈ ${fmt(need/100*p.pricePer100g)} ₽</b></div>`:''}</div>`;
+      stockHtml=stockState;
+    }else{
+      statsHtml=`<div class="product-stats characteristic-stats">${stock!=null?`<div><span>В карточке</span><b>${fmt(stock)} г</b></div>`:''}${p.pricePer100g?`<div><span>Цена</span><b>${fmt(p.pricePer100g)} ₽ / 100 г</b></div>`:''}</div>`;
     }
     const deviationPct=match.deviation*100;
     const deviationText=Math.abs(deviationPct)<0.05?'точное совпадение':`${deviationPct>0?'+':''}${fmt(deviationPct,1)}% от цели`;
@@ -594,33 +606,79 @@
       <div class="product-card-top">${visual}<div><h3>${escapeHtml(productTitle(p))}</h3><div class="meta">${escapeHtml(meta)}</div><span class="source-badge">VK · #Манияпряжи</span></div></div>
       <div class="tag-row">${tags.slice(0,5).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
       <div class="meterage-match"><div><span>Исходный метраж</span><b>${fmt(p.meterage.metersPer100g)} м/100 г</b></div><div class="match-arrow">→</div><div><span>${escapeHtml(plyWord)}</span><b>≈ ${fmt(match.effective)} м/100 г</b><small>${escapeHtml(deviationText)}</small></div></div>
-      <div class="product-stats"><div><span>Нужно с запасом</span><b>≈ ${fmt(need)} г</b></div><div><span>В карточке</span><b>${stock==null?'—':`${fmt(stock)} г`}</b></div>${p.pricePer100g?`<div><span>Ориентировочная стоимость</span><b>≈ ${fmt(need/100*p.pricePer100g)} ₽</b></div>`:''}</div>
+      ${statsHtml}
       ${stockHtml}
       ${p.photoUrl?`<button class="card-action" data-open="${encodeURIComponent(p.photoUrl)}" type="button">Открыть фото VK</button>`:''}
     </article>`;
   }
 
+  function matchContext(){
+    if(state.matchMode==='product'){
+      if(!state.product)return null;
+      const r=state.product;
+      return {mode:'product',target:r.meterage,requiredMeters:r.requiredMetersWithReserve||r.requiredMeters,product:r};
+    }
+    const target=numeric(els.matchManualMeterage.value);
+    if(!target||target<=0)return null;
+    return {mode:'characteristics',target};
+  }
+
+  function renderMatchMode(){
+    const isProduct=state.matchMode==='product';
+    els.matchModeCharacteristics.classList.toggle('is-active',!isProduct);
+    els.matchModeProduct.classList.toggle('is-active',isProduct);
+    els.manualMatchInput.hidden=isProduct;
+    els.productMatchSource.hidden=!isProduct;
+    if(isProduct){
+      if(state.product){
+        const r=state.product;
+        els.productMatchSourceText.innerHTML=`Используем расчёт: <b>${escapeHtml(r.garment.name)} · ${escapeHtml(r.size.label)}</b>, ${fmt(r.meterage)} м/100 г, требуется ≈ ${fmt(Math.ceil(r.reserveGrams/5)*5)} г.`;
+      }else{
+        els.productMatchSourceText.textContent='Сначала рассчитайте изделие во второй вкладке.';
+      }
+    }
+  }
+
   function renderMatches(){
-    if(!state.product){els.matchEmpty.hidden=false;els.matchContent.hidden=true;return;}
+    renderMatchMode();
+    const ctx=matchContext();
+    if(!ctx){
+      els.matchEmpty.hidden=false;els.matchContent.hidden=true;
+      if(state.matchMode==='product'){
+        els.matchEmpty.querySelector('h3').textContent='Сначала рассчитайте изделие';
+        els.matchEmpty.querySelector('p').textContent='Либо переключитесь на «По характеристикам» и укажите нужный метраж вручную.';
+      }else{
+        els.matchEmpty.querySelector('h3').textContent='Укажите нужный метраж';
+        els.matchEmpty.querySelector('p').textContent='После этого покажем подходящую пряжу из каталога с учётом сложений.';
+      }
+      return;
+    }
     els.matchEmpty.hidden=true;els.matchContent.hidden=false;
-    const r=state.product;
     const tolPct=Math.round(matchTolerance()*100);
-    const densityText=r.gauge?`плотность ${fmt(r.gauge,1)} п./10 см`:`плотность не указана`;
-    els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>${escapeHtml(r.garment.name)} · ${escapeHtml(r.size.label)}</h3><p>Нужно ≈ ${fmt(r.requiredMetersWithReserve||r.requiredMeters)} м готовой нити с запасом. Целевой метраж: <b>${fmt(r.meterage)} м/100 г</b>; ${densityText}.</p></div>`;
-    els.matchMeterageText.textContent=`${fmt(r.meterage)} м/100 г · допуск ±${tolPct}%`;
+    if(ctx.mode==='product'){
+      const r=ctx.product;
+      const densityText=r.gauge?`плотность ${fmt(r.gauge,1)} п./10 см`:`плотность не указана`;
+      els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>${escapeHtml(r.garment.name)} · ${escapeHtml(r.size.label)}</h3><p>Нужно ≈ ${fmt(ctx.requiredMeters)} м готовой нити с запасом. Целевой метраж: <b>${fmt(ctx.target)} м/100 г</b>; ${densityText}.</p></div>`;
+    }else{
+      els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>Подбор по характеристикам</h3><p>Целевой метраж: <b>${fmt(ctx.target)} м/100 г</b>. Расчёт изделия не используется, поэтому требуемый вес и достаточность остатка не рассчитываются.</p></div>`;
+    }
+    els.matchMeterageText.textContent=`${fmt(ctx.target)} м/100 г · допуск ±${tolPct}%`;
     els.matchMeterageHint.textContent=`Проверяем 1–${maxMatchPlies()} сложений одной и той же пряжи.`;
     renderMatchFilterOptions();
 
-    const target=r.meterage;
     const rows=state.vkCatalog.map(p=>{
-      const b=scoreProduct(p,target);if(!b)return null;
+      const b=scoreProduct(p,ctx.target);if(!b)return null;
       if(!productPassesColor(p)||!productPassesComposition(p))return null;
-      const needRaw=(r.requiredMetersWithReserve||r.requiredMeters)/b.effective*100;
-      const need=Math.ceil(needRaw/5)*5;
-      const stockEnough=p.stockGrams==null?null:p.stockGrams>=need;
-      return{p,b:{...b,needGrams:need,stockEnough}};
+      if(ctx.mode==='product'){
+        const needRaw=ctx.requiredMeters/b.effective*100;
+        const need=Math.ceil(needRaw/5)*5;
+        const stockEnough=p.stockGrams==null?null:p.stockGrams>=need;
+        return{p,b:{...b,needGrams:need,stockEnough}};
+      }
+      return{p,b:{...b,needGrams:null,stockEnough:null}};
     }).filter(Boolean).sort((a,b)=>{
       const d=a.b.absDeviation-b.b.absDeviation;if(Math.abs(d)>1e-9)return d;
+      if(ctx.mode!=='product')return 0;
       if(a.b.stockEnough===b.b.stockEnough)return 0;
       if(a.b.stockEnough===true)return-1;if(b.b.stockEnough===true)return 1;return 0;
     });
@@ -693,8 +751,11 @@
   els.productDimensionsFields.addEventListener('input',()=>{readProductDimensions();updateDimensionSummary();els.productResultCard.hidden=true;state.product=null;renderMatches();});
   [els.productGauge,els.productRowGauge,els.productMeterage].forEach(input=>input.addEventListener('input',()=>{state.product=null;els.productResultCard.hidden=true;els.productValidation.textContent='';renderMatches();updateGaugeHint();}));
   $('#calculateProductBtn').addEventListener('click',calculateProduct);
-  $('#goMatchBtn').addEventListener('click',()=>switchView('match'));$('#copyProductBtn').addEventListener('click',copyProduct);
+  $('#goMatchBtn').addEventListener('click',()=>{state.matchMode='product';renderMatches();switchView('match');});$('#copyProductBtn').addEventListener('click',copyProduct);
   els.refreshCatalogBtn.addEventListener('click',()=>loadCatalogAndSync(true));
+  els.matchModeCharacteristics.addEventListener('click',()=>{state.matchMode='characteristics';renderMatches();});
+  els.matchModeProduct.addEventListener('click',()=>{state.matchMode='product';renderMatches();});
+  els.matchManualMeterage.addEventListener('input',()=>{state.matchManualMeterage=els.matchManualMeterage.value;renderMatches();});
   els.matchColorEnabled.addEventListener('change',()=>{
     state.matchFilters.colorEnabled=els.matchColorEnabled.checked;
     renderMatches();
