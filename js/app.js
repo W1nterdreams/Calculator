@@ -20,9 +20,9 @@
     sample:null,
     garmentId:'women_pullover',
     sizeIndex:3,
-    productGauge:20,
+    productGauge:null,
     productRowGauge:null,
-    productMeterage:280,
+    productMeterage:null,
     productDims:null,
     product:null,
     vkCatalog:[],
@@ -70,7 +70,7 @@
 
   function compositionPairHtml(part,i){
     return `<div class="composition-pair">
-      <div class="percent-input"><input data-comp-index="${i}" data-comp-field="percent" type="number" min="0" max="100" step="1" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(part.percent)}" placeholder="например, 70"><span>%</span></div>
+      <div class="percent-input"><input data-comp-index="${i}" data-comp-field="percent" type="number" min="0" max="100" step="1" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(part.percent)}" placeholder=""><span>%</span></div>
       <input class="material-input" data-comp-index="${i}" data-comp-field="material" type="text" value="${escapeHtml(part.material)}" placeholder="например, меринос">
     </div>`;
   }
@@ -87,7 +87,7 @@
       return `<article class="yarn-component" data-yarn-id="${y.id}">
         <div class="yarn-component-head"><h3>Нить ${index+1}</h3>${state.yarns.length>1?'<button class="remove-yarn" type="button" data-remove-yarn>Убрать</button>':''}</div>
         <div class="component-fields">
-          <label class="field"><span>Длина</span><div class="input-unit"><input data-yarn-field="meters" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.meters)}" placeholder="например, 1500"><b>м</b></div></label>
+          <label class="field"><span>Метраж</span><div class="input-unit"><input data-yarn-field="meters" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.meters)}" placeholder="например, 1500"><b>м</b></div></label>
           <label class="field"><span>Вес</span><div class="input-unit"><input data-yarn-field="weight" type="number" min="1" step="1" inputmode="decimal" value="${escapeHtml(y.weight)}" placeholder="например, 100"><b>г</b></div></label>
         </div>
         <div class="component-composition">
@@ -345,20 +345,49 @@
     const keys=Object.keys(D.meterRanges).map(Number).sort((a,b)=>a-b);const v=clamp(g,keys[0],keys[keys.length-1]);const lo=Math.floor(v),hi=Math.ceil(v);const a=D.meterRanges[lo]||D.meterRanges[keys[0]],b=D.meterRanges[hi]||a;if(lo===hi)return[a[0],a[1]];const t=v-lo;return[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
   }
 
+  function inferGaugeFromMeterage(meterage){
+    const entries=Object.entries(D.meterRanges).map(([g,r])=>({g:Number(g),mid:(r[0]+r[1])/2}));
+    let best=entries[0];
+    for(const item of entries){
+      const d=Math.abs(Math.log(item.mid/meterage));
+      const bd=Math.abs(Math.log(best.mid/meterage));
+      if(d<bd)best=item;
+    }
+    return best.g;
+  }
+
   function updateGaugeHint(){
-    const gauge=numeric(els.productGauge.value)||20;const [a,b]=meterRangeForGauge(gauge);
-    els.gaugeHint.textContent=`Ориентир для этой плотности: примерно ${fmt(a)}–${fmt(b)} м/100 г готовой рабочей нити.`;
+    const gauge=numeric(els.productGauge.value),rowGauge=numeric(els.productRowGauge.value),meterage=numeric(els.productMeterage.value);
+    if(gauge&&gauge>0){
+      const [a,b]=meterRangeForGauge(clamp(gauge,8,30));
+      els.gaugeHint.textContent=`Для ${fmt(gauge,1)} п./10 см ориентир по рабочему метражу: примерно ${fmt(a)}–${fmt(b)} м/100 г.`;
+      return;
+    }
+    if(rowGauge&&rowGauge>0){
+      els.gaugeHint.textContent='Петли можно не указывать. При расчёте будет использована указанная плотность по рядам и расчётная плотность по петлям.';
+      return;
+    }
+    if(meterage&&meterage>0){
+      const inferred=inferGaugeFromMeterage(meterage);
+      els.gaugeHint.textContent=`Плотность не указана — допустимо. Для ориентировочного расчёта будет использована типичная плотность около ${fmt(inferred,1)} п./10 см для такого метража.`;
+      return;
+    }
+    els.gaugeHint.textContent='Петли и ряды необязательны. Если их не указывать, расчёт будет выполнен по размерам изделия и типичной плотности для введённого метража, поэтому точность будет ниже.';
   }
 
   function calculateProduct(){
     const g=garment(),size=g.sizes[state.sizeIndex],gauge=numeric(els.productGauge.value),rowGauge=numeric(els.productRowGauge.value),meterage=numeric(els.productMeterage.value);
-    if(!size||!gauge||gauge<8||gauge>40||!meterage||meterage<=0){els.productValidation.textContent='Проверьте размер, плотность и рабочий метраж.';return null;}
+    if(!size||!meterage||meterage<=0){els.productValidation.textContent='Проверьте размер и укажите рабочий метраж.';return null;}
+    if(gauge!=null&&(gauge<8||gauge>40)){els.productValidation.textContent='Плотность по петлям должна быть в пределах 8–40 п./10 см либо оставьте поле пустым.';return null;}
+    if(rowGauge!=null&&rowGauge<=0){els.productValidation.textContent='Плотность по рядам должна быть больше нуля либо оставьте поле пустым.';return null;}
     const dims=readProductDimensions(),area=garmentArea(g,dims);
     if(!(area>0)){els.productValidation.textContent='Проверьте размеры изделия в сантиметрах.';return null;}
     els.productValidation.textContent='';
-    const range=meterRangeForGauge(clamp(gauge,8,30));
+    const calcGauge=gauge||(rowGauge?clamp(rowGauge/1.4,8,30):inferGaugeFromMeterage(meterage));
+    const calcRowGauge=rowGauge||(gauge?gauge*1.4:calcGauge*1.4);
+    const range=meterRangeForGauge(clamp(calcGauge,8,30));
     const hasSampleWeight=!!(state.sample&&state.sample.gramsPer100cm2);
-    const sampleGaugeMatches=hasSampleWeight&&Math.abs(state.sample.gauge-gauge)/gauge<=.04;
+    const sampleGaugeMatches=hasSampleWeight&&(!gauge||Math.abs(state.sample.gauge-gauge)/gauge<=.04);
     const sampleMeterageMatches=hasSampleWeight&&state.mix&&Math.abs(state.mix.combinedMeterage-meterage)/meterage<=.04;
     let requiredMeters,rawGrams,method,metersPer100cm2;
     if(hasSampleWeight&&sampleGaugeMatches&&sampleMeterageMatches){
@@ -367,19 +396,21 @@
       metersPer100cm2=requiredMeters/area*100;
       method='sample';
     }else{
-      metersPer100cm2=estimateMetersPer100cm2(gauge,rowGauge);
+      metersPer100cm2=estimateMetersPer100cm2(calcGauge,calcRowGauge);
       requiredMeters=area/100*metersPer100cm2;
       rawGrams=requiredMeters/meterage*100;
-      method='geometry';
+      method=gauge?'geometry':(rowGauge?'geometry_rows':'geometry_inferred');
     }
     const reserveGrams=rawGrams*(1+D.reserve),reserveMeters=requiredMeters*(1+D.reserve);
     let compat='good';
-    if(meterage<range[0]*.65||meterage>range[1]*1.4)compat='bad';else if(meterage<range[0]*.85||meterage>range[1]*1.15)compat='warn';
-    state.product={garment:g,size,gauge,rowGauge,meterage,dims,area,metersPer100cm2,requiredMeters,requiredMetersWithReserve:reserveMeters,rawGrams,reserveGrams,range,compat,method};
+    if(!gauge)compat='warn';
+    else if(meterage<range[0]*.65||meterage>range[1]*1.4)compat='bad';else if(meterage<range[0]*.85||meterage>range[1]*1.15)compat='warn';
+    state.product={garment:g,size,gauge,rowGauge,calcGauge,calcRowGauge,meterage,dims,area,metersPer100cm2,requiredMeters,requiredMetersWithReserve:reserveMeters,rawGrams,reserveGrams,range,compat,method};
     renderProductResult(state.product);renderMatches();return state.product;
   }
 
   function compatibilityCopy(r){
+    if(!r.gauge)return ['Расчёт без плотности','warn'];
     const [min,max]=r.range;
     if(r.meterage>max*1.4)return ['Нить заметно тоньше','bad'];
     if(r.meterage<min*.65)return ['Нить заметно толще','bad'];
@@ -394,7 +425,11 @@
     const label=compatibilityCopy(r);els.compatBadge.textContent=label[0];els.compatBadge.className='compat-badge '+label[1];
     const methodText=r.method==='sample'
       ?`Расход рассчитан по фактическому весу образца после пересчёта на площадь изделия.`
-      :`Вес образца не использован: расход рассчитан геометрически по площади изделия и плотности петель/рядов (модель лицевой глади).`;
+      :r.method==='geometry'
+        ?`Вес образца не использован: расход рассчитан геометрически по площади изделия и указанной плотности петель/рядов.`
+        :r.method==='geometry_rows'
+          ?`Плотность по петлям не указана: расход рассчитан по площади изделия, указанной плотности рядов и расчётной плотности петель.`
+          :`Плотность не указана: расход рассчитан по площади изделия и типичной плотности, соответствующей введённому метражу. Это менее точный режим.`;
     els.productResultNote.textContent=`Площадь расчётной модели ≈ ${fmt(r.area)} см². ${methodText} В результат уже добавлен запас ${Math.round(D.reserve*100)}%. Узоры, косы, резинки, планки и декоративные детали, которых нет в образце, могут изменить расход.`;
     els.productResultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
@@ -414,7 +449,7 @@
   function renderMatches(){
     if(!state.product){els.matchEmpty.hidden=false;els.matchContent.hidden=true;return;}
     els.matchEmpty.hidden=true;els.matchContent.hidden=false;
-    const r=state.product;els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>${escapeHtml(r.garment.name)} · ${escapeHtml(r.size.label)}</h3><p>Нужно ≈ ${fmt(r.requiredMetersWithReserve||r.requiredMeters)} м готовой нити с запасом. Целевой рабочий метраж: ${fmt(r.meterage)} м/100 г; ориентир для плотности — ${fmt(r.range[0])}–${fmt(r.range[1])} м/100 г.</p></div>`;
+    const r=state.product;const densityText=r.gauge?`ориентир для плотности — ${fmt(r.range[0])}–${fmt(r.range[1])} м/100 г`:`плотность не указана, использован расчётный ориентир ≈ ${fmt(r.calcGauge,1)} п./10 см`;els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>${escapeHtml(r.garment.name)} · ${escapeHtml(r.size.label)}</h3><p>Нужно ≈ ${fmt(r.requiredMetersWithReserve||r.requiredMeters)} м готовой нити с запасом. Целевой рабочий метраж: ${fmt(r.meterage)} м/100 г; ${densityText}.</p></div>`;
     const target=r.meterage;
     const rows=state.vkCatalog.map(p=>{const b=scoreProduct(p,target);if(!b)return null;const needRaw=(r.requiredMetersWithReserve||r.requiredMeters)/b.effective*100;const need=Math.ceil(needRaw/5)*5;const stockPenalty=p.stockGrams!=null&&p.stockGrams<need?0.35:0;return{p,b:{...b,needGrams:need},score:b.distance+stockPenalty};}).filter(Boolean).sort((a,b)=>a.score-b.score).slice(0,12);
     els.matchGrid.innerHTML=rows.length?rows.map(x=>productCard(x.p,x.b)).join(''):`<div class="empty-state"><h3>Подходящих данных пока нет</h3><p>В каталоге нет фотографий с меткой #Калькулятор и распознанным метражом либо каталог ещё не обновлён.</p></div>`;
@@ -455,7 +490,8 @@
 
   function copyProduct(){
     if(!state.product)return;const r=state.product;
-    const text=`Мания пряжи — ориентировочный расчёт\n${r.garment.name}, ${r.size.label}\nПлотность: ${fmt(r.gauge,1)} п./10 см${r.rowGauge?`\nРяды: ${fmt(r.rowGauge,1)} р./10 см`:''}\nРабочий метраж: ${fmt(r.meterage)} м/100 г\nНужно с запасом: ≈ ${fmt(r.requiredMetersWithReserve||r.requiredMeters)} м\nВес с запасом: ≈ ${fmt(Math.ceil(r.reserveGrams/5)*5)} г`;
+    const densityLine=r.gauge?`Плотность: ${fmt(r.gauge,1)} п./10 см`:`Плотность: не указана (расчётный ориентир ≈ ${fmt(r.calcGauge,1)} п./10 см)`;
+    const text=`Мания пряжи — ориентировочный расчёт\n${r.garment.name}, ${r.size.label}\n${densityLine}${r.rowGauge?`\nРяды: ${fmt(r.rowGauge,1)} р./10 см`:''}\nРабочий метраж: ${fmt(r.meterage)} м/100 г\nНужно с запасом: ≈ ${fmt(r.requiredMetersWithReserve||r.requiredMeters)} м\nВес с запасом: ≈ ${fmt(Math.ceil(r.reserveGrams/5)*5)} г`;
     if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(text).then(()=>showToast('Результат скопирован')).catch(()=>fallbackCopy(text));else fallbackCopy(text);
   }
   function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');showToast('Результат скопирован');}catch(_){showToast('Не удалось скопировать');}ta.remove();}
@@ -474,7 +510,7 @@
   els.garmentGrid.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b)return;state.garmentId=b.dataset.id;state.sizeIndex=Math.min(3,garment().sizes.length-1);state.productDims=null;renderGarments();renderSizes();els.productResultCard.hidden=true;state.product=null;renderMatches();});
   els.sizeChips.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;state.sizeIndex=Number(b.dataset.i);state.productDims=null;renderSizes();els.productResultCard.hidden=true;state.product=null;renderMatches();});
   els.productDimensionsFields.addEventListener('input',()=>{readProductDimensions();updateDimensionSummary();els.productResultCard.hidden=true;state.product=null;renderMatches();});
-  els.productGauge.addEventListener('input',updateGaugeHint);
+  els.productGauge.addEventListener('input',updateGaugeHint);els.productRowGauge.addEventListener('input',updateGaugeHint);els.productMeterage.addEventListener('input',updateGaugeHint);
   $('#calculateProductBtn').addEventListener('click',calculateProduct);
   $('#goMatchBtn').addEventListener('click',()=>switchView('match'));$('#copyProductBtn').addEventListener('click',copyProduct);
   els.refreshCatalogBtn.addEventListener('click',()=>loadCatalogAndSync(true));
