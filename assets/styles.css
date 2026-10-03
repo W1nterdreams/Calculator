@@ -422,3 +422,7 @@ body{
 .match-criterion .filter-options,.match-criterion .composition-filter-options{margin:0 0 6px}
 @media(max-width:760px){.match-criterion{grid-template-columns:1fr;gap:9px}.match-criteria-head{padding:14px}.match-criterion{padding:13px 14px}}
 @media(max-width:520px){.match-criteria-head{display:block}.match-criteria-head .match-count{display:inline-flex;margin-top:8px}.match-criterion-control>.manual-match-input .field{max-width:none}}
+
+/* match09: explicit search action */
+.match-find-btn{width:auto;min-width:180px;margin:14px 16px 16px;display:block;margin-left:auto;}
+@media(max-width:520px){.match-find-btn{width:calc(100% - 28px);margin:12px 14px 14px;}}
