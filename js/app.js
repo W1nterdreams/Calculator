@@ -458,13 +458,13 @@
   }
 
   function compatibilityCopy(r){
-    if(!r.gauge)return ['Расчёт без плотности','warn'];
+    if(!r.gauge)return ['Расчёт без указанной плотности','warn'];
     const [min,max]=r.range;
-    if(r.meterage>max*1.4)return ['Нить заметно тоньше','bad'];
-    if(r.meterage<min*.65)return ['Нить заметно толще','bad'];
-    if(r.meterage>max*1.15)return ['Нить немного тоньше','warn'];
-    if(r.meterage<min*.85)return ['Нить немного толще','warn'];
-    return ['Метраж подходит','good'];
+    if(r.meterage>max*1.4)return ['Рабочая нить заметно тоньше, чем обычно для этой плотности','bad'];
+    if(r.meterage<min*.65)return ['Рабочая нить заметно толще, чем обычно для этой плотности','bad'];
+    if(r.meterage>max*1.15)return ['Рабочая нить немного тоньше, чем обычно для этой плотности','warn'];
+    if(r.meterage<min*.85)return ['Рабочая нить немного толще, чем обычно для этой плотности','warn'];
+    return ['Рабочий метраж соответствует указанной плотности','good'];
   }
 
   function renderProductResult(r){
@@ -478,7 +478,10 @@
         :r.method==='geometry_rows'
           ?`Плотность по петлям не указана: расход рассчитан по площади изделия, указанной плотности рядов и расчётной плотности петель.`
           :`Плотность не указана: расход рассчитан по площади изделия и типичной плотности, соответствующей введённому метражу. Это менее точный режим.`;
-    els.productResultNote.textContent=`Площадь расчётной модели ≈ ${fmt(r.area)} см². ${methodText} В результат уже добавлен запас ${Math.round(D.reserve*100)}%. Узоры, косы, резинки, планки и декоративные детали, которых нет в образце, могут изменить расход.`;
+    const meterageContext=r.gauge
+      ?` При плотности ${fmt(r.gauge,1)} п./10 см ориентировочный диапазон рабочего метража составляет примерно ${fmt(r.range[0])}–${fmt(r.range[1])} м/100 г. Указано: ${fmt(r.meterage)} м/100 г.`
+      :'';
+    els.productResultNote.textContent=`Площадь расчётной модели ≈ ${fmt(r.area)} см². ${methodText}${meterageContext} В результат уже добавлен запас ${Math.round(D.reserve*100)}%. Узоры, косы, резинки, планки и декоративные детали, которых нет в образце, могут изменить расход.`;
     els.productResultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
 
