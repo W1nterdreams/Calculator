@@ -389,3 +389,17 @@ body{
 .match-no-results{grid-column:1/-1;margin-top:0}
 @media(max-width:760px){.match-filter-row{grid-template-columns:1fr;gap:7px}.composition-filter-item{grid-template-columns:1fr}.composition-min{justify-content:flex-start}.match-filter-card{padding:16px}.meterage-match{grid-template-columns:1fr auto 1fr}}
 @media(max-width:520px){.match-filter-head{display:block}.match-count{display:inline-flex;margin-top:8px}.composition-filter-item{padding:8px}.meterage-match{gap:5px;padding:10px}.meterage-match b{font-size:12.5px}.stock-state{align-items:flex-start;flex-direction:column;gap:3px}}
+
+/* selection07 — independent matching by characteristics */
+.match-mode-card{margin-top:14px;padding:18px 20px;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 5px 18px rgba(70,40,120,.05)}
+.match-mode-copy h2{margin:4px 0 4px;font-size:20px;color:var(--accent-deep)}
+.match-mode-copy p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.45}
+.match-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:15px;padding:5px;background:#f2edf9;border-radius:15px}
+.match-mode-btn{min-height:44px;border:0;border-radius:11px;background:transparent;color:#6c5a84;font-weight:800;cursor:pointer;padding:9px 12px}
+.match-mode-btn.is-active{background:#fff;color:var(--accent-deep);box-shadow:0 3px 12px rgba(70,40,120,.09)}
+.manual-match-input{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#faf8fd}
+.manual-match-input .field{max-width:360px}.manual-match-input>small{display:block;margin-top:7px;color:var(--muted);font-size:11.5px;line-height:1.4}
+.product-match-source{margin-top:14px;padding:13px 14px;border:1px solid var(--line);border-radius:16px;background:#faf8fd;display:flex;align-items:center;justify-content:space-between;gap:14px;color:#655778;font-size:12.5px;line-height:1.45}
+.product-match-source b{color:var(--accent-deep)}
+.characteristic-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:620px){.match-mode-switch{grid-template-columns:1fr}.product-match-source{align-items:stretch;flex-direction:column}.manual-match-input .field{max-width:none}}
