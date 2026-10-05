@@ -12,14 +12,16 @@
     if(!window.vkBridge)throw new Error('VK Bridge не загружен. Запустите приложение внутри VK.');
     await window.vkBridge.send('VKWebAppInit');
   }
-  async function getToken(){
+  async function requestUserToken(scope=''){
     const appId=getLaunchAppId();
     if(!appId)throw new Error('Не найден vk_app_id. Откройте калькулятор как VK Mini App.');
-    const data=await window.vkBridge.send('VKWebAppGetAuthToken',{app_id:appId,scope:'photos'});
+    const data=await window.vkBridge.send('VKWebAppGetAuthToken',{app_id:appId,scope:String(scope||'')});
     const token=String(data?.access_token||'');
     if(!token)throw new Error('VK не вернул access token.');
-    return token;
+    return {token,scope:String(data?.scope||''),requestedScope:String(scope||'')};
   }
+  function apiErrorCode(error){return Number(error?.error_code||error?.error_data?.error_code||0);}
+  function isCatalogAccessError(error){return [5,7,15].includes(apiErrorCode(error));}
   let lastApiCallAt=0;
   const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   async function api(token,method,params={}){
@@ -57,6 +59,11 @@
     const sorted=[...sizes].sort((a,b)=>(Number(a.width||0)*Number(a.height||0))-(Number(b.width||0)*Number(b.height||0)));
     const preferred=sorted.find(x=>Number(x.width||0)>=320)||sorted[sorted.length-1];return String(preferred?.url||'');
   }
+  function photoFull(photo){
+    const sizes=Array.isArray(photo?.sizes)?photo.sizes:[];if(!sizes.length)return '';
+    const largest=[...sizes].sort((a,b)=>(Number(b.width||0)*Number(b.height||0))-(Number(a.width||0)*Number(a.height||0)))[0];
+    return String(largest?.url||'');
+  }
   function vkPhotoUrl(photo){const owner=Number(photo?.owner_id||C.OWNER_ID||0),id=Number(photo?.id||0);return owner&&id?`https://vk.com/photo${owner}_${id}`:'';}
   function markerRegex(){
     const marker=String(C.PARSER_MARKER||'#Манияпряжи').trim();
@@ -64,6 +71,36 @@
     return new RegExp('(?:^|\\s)'+escaped+'(?=\\s|$|[.,;:!?])','iu');
   }
   function hasParserMarker(text){return markerRegex().test(String(text||''));}
+
+  async function probeCatalogRead(token){
+    const albumId=(C.ALBUM_IDS||[]).map(Number).find(Number.isInteger);
+    if(!albumId)throw new Error('В конфигурации не указаны альбомы каталога.');
+    await api(token,'photos.get',{owner_id:Number(C.OWNER_ID),album_id:String(albumId),extended:0,photo_sizes:0,count:1,offset:0});
+    return true;
+  }
+  async function getCatalogToken(onProgress){
+    let basicError=null;
+    try{
+      onProgress({phase:'auth',message:'Проверяем доступ к каталогу сообщества…'});
+      const basic=await requestUserToken('');
+      try{
+        await probeCatalogRead(basic.token);
+        return {...basic,mode:'public'};
+      }catch(error){
+        if(!isCatalogAccessError(error))throw error;
+        basicError=error;
+      }
+    }catch(error){
+      // На части клиентов VK запрос токена с пустым scope может быть недоступен.
+      // В таком случае сохраняем прежнюю рабочую схему с разрешением photos.
+      basicError=error;
+    }
+    console.info('Public catalog token is unavailable; falling back to photos scope.',basicError);
+    onProgress({phase:'auth',message:'VK требует разрешение на фотографии для чтения каталога…'});
+    const photos=await requestUserToken('photos');
+    await probeCatalogRead(photos.token);
+    return {...photos,mode:'photos'};
+  }
 
   async function loadAlbumTitles(token,onProgress){
     const wanted=new Set((C.ALBUM_IDS||[]).map(Number));const titles=new Map();let offset=0,total=null;
@@ -79,7 +116,8 @@
 
   async function sync(options={}){
     const onProgress=typeof options.onProgress==='function'?options.onProgress:()=>{};
-    await initBridge();onProgress({phase:'auth',message:'Запрашиваем доступ к фотографиям…'});const token=await getToken();
+    await initBridge();
+    const auth=await getCatalogToken(onProgress),token=auth.token;
     const albumTitles=await loadAlbumTitles(token,onProgress);
     const items=[];const errors=[];let totalPhotos=0,markedPhotos=0,parsedWithMeterage=0;
     const ids=(C.ALBUM_IDS||[]).map(Number).filter(Number.isInteger);const marker=String(C.PARSER_MARKER||'#Манияпряжи');
@@ -94,13 +132,13 @@
           if(!text||!hasParserMarker(text))continue;
           markedPhotos+=1;
           const parsed=P.parseDescription(text,{id:`vk-${Number(photo?.owner_id||C.OWNER_ID)}-${Number(photo?.id||0)}`,photoUrl:vkPhotoUrl(photo)});
-          parsed.albumId=albumId;parsed.albumTitle=albumTitle;parsed.vkPhotoId=Number(photo?.id||0);parsed.ownerId=Number(photo?.owner_id||C.OWNER_ID);parsed.date=Number(photo?.date||0);parsed.thumbUrl=photoThumb(photo);parsed.source='vk';parsed.parserMarker=marker;
+          parsed.albumId=albumId;parsed.albumTitle=albumTitle;parsed.vkPhotoId=Number(photo?.id||0);parsed.ownerId=Number(photo?.owner_id||C.OWNER_ID);parsed.date=Number(photo?.date||0);parsed.thumbUrl=photoThumb(photo);parsed.fullImageUrl=photoFull(photo)||parsed.thumbUrl;parsed.source='vk';parsed.parserMarker=marker;
           if(parsed.meterage)parsedWithMeterage+=1;items.push(parsed);
         }
         offset+=photos.length;if(!photos.length||(albumTotal!==null&&offset>=albumTotal)||(albumTotal===null&&photos.length<Number(C.PHOTOS_PAGE_SIZE||1000)))break;
       }
     }
-    const payload={schema:3,groupId:Number(C.GROUP_ID),ownerId:Number(C.OWNER_ID),albumIds:ids,parserMarker:marker,syncedAt:Date.now(),totalPhotos,markedPhotos,parsedWithMeterage,errors,items};
+    const payload={schema:3,groupId:Number(C.GROUP_ID),ownerId:Number(C.OWNER_ID),albumIds:ids,parserMarker:marker,syncedAt:Date.now(),authMode:auth.mode,totalPhotos,markedPhotos,parsedWithMeterage,errors,items};
     await cacheSet(payload);onProgress({phase:'done',message:`Готово: найдено ${markedPhotos} фото с ${marker}, ${parsedWithMeterage} с метражом.`});return payload;
   }
   window.MANIA_VK_CATALOG={sync,loadCached:cacheGet,getLaunchAppId,config:C,hasParserMarker};

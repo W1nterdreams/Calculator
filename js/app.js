@@ -41,7 +41,8 @@
     sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productDimensionsCard:$('#productDimensionsCard'),productDimensionsFields:$('#productDimensionsFields'),productDimensionsHint:$('#productDimensionsHint'),productDimensionSummary:$('#productDimensionSummary'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
     refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid'),
     matchCount:$('#matchCount'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),
-    matchModeCharacteristics:$('#matchModeCharacteristics'),matchModeProduct:$('#matchModeProduct'),manualMatchInput:$('#manualMatchInput'),matchManualMeterage:$('#matchManualMeterage'),productMatchSource:$('#productMatchSource'),productMatchSourceText:$('#productMatchSourceText'),runMatchSearchBtn:$('#runMatchSearchBtn')
+    matchModeCharacteristics:$('#matchModeCharacteristics'),matchModeProduct:$('#matchModeProduct'),manualMatchInput:$('#manualMatchInput'),matchManualMeterage:$('#matchManualMeterage'),productMatchSource:$('#productMatchSource'),productMatchSourceText:$('#productMatchSourceText'),runMatchSearchBtn:$('#runMatchSearchBtn'),
+    photoLightbox:$('#photoLightbox'),photoLightboxImage:$('#photoLightboxImage'),photoLightboxTitle:$('#photoLightboxTitle'),photoLightboxClose:$('#photoLightboxClose')
   };
 
   function icon(name){return `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;}
@@ -583,7 +584,8 @@
     if(p.composition?.length)tags.push(materialText(p.composition));
     if(p.color)tags.push(`Цвет: ${p.color}`);
     if(p.shade)tags.push(`Оттенок: ${p.shade}`);
-    const visual=p.thumbUrl?`<img class="product-thumb" src="${escapeHtml(p.thumbUrl)}" alt="" loading="lazy" decoding="async">`:'<div class="yarn-swatch"></div>';
+    const fullImage=p.fullImageUrl||p.thumbUrl||'';
+    const visual=p.thumbUrl?`<button class="product-thumb-button" type="button" data-image-src="${encodeURIComponent(fullImage)}" data-image-fallback="${encodeURIComponent(p.thumbUrl)}" data-image-title="${encodeURIComponent(productTitle(p))}" aria-label="Увеличить фото: ${escapeHtml(productTitle(p))}"><img class="product-thumb" src="${escapeHtml(p.thumbUrl)}" alt="${escapeHtml(productTitle(p))}" loading="lazy" decoding="async"><span class="product-thumb-hint" aria-hidden="true">↗</span></button>`:'<div class="yarn-swatch"></div>';
     const meta=[p.country].filter(Boolean).join(' · ');
     const hasNeed=Number.isFinite(match.needGrams)&&match.needGrams>0;
     const need=hasNeed?match.needGrams:null;
@@ -741,6 +743,28 @@
     els.matchGrid.innerHTML=rows.length?rows.map(x=>productCard(x.p,x.b)).join(''):`<div class="empty-state match-no-results"><h3>По выбранным условиям ничего не найдено</h3><p>Попробуйте изменить или отключить один из фильтров${ctx.hasMeterage?`. Для метража используется допуск ±${tolPct}% и учитывается сложение одной и той же пряжи.`:'.'}</p></div>`;
   }
 
+  let photoLightboxPreviousFocus=null;
+  function openPhotoLightbox(src,fallback,title){
+    if(!els.photoLightbox||!els.photoLightboxImage||!src)return;
+    photoLightboxPreviousFocus=document.activeElement;
+    els.photoLightboxImage.dataset.fallback=fallback||'';
+    els.photoLightboxImage.src=src;
+    els.photoLightboxImage.alt=title||'Фото пряжи';
+    els.photoLightboxTitle.textContent=title||'Фото пряжи';
+    els.photoLightbox.hidden=false;
+    document.body.classList.add('photo-lightbox-open');
+    requestAnimationFrame(()=>els.photoLightboxClose?.focus());
+  }
+  function closePhotoLightbox(){
+    if(!els.photoLightbox||els.photoLightbox.hidden)return;
+    els.photoLightbox.hidden=true;
+    document.body.classList.remove('photo-lightbox-open');
+    els.photoLightboxImage.removeAttribute('src');
+    els.photoLightboxImage.dataset.fallback='';
+    if(photoLightboxPreviousFocus&&typeof photoLightboxPreviousFocus.focus==='function')photoLightboxPreviousFocus.focus();
+    photoLightboxPreviousFocus=null;
+  }
+
   function setCatalogStatus(text,type=''){
     els.catalogStatus.className='catalog-status'+(type?' '+type:'');els.catalogStatus.querySelector('span:last-child').textContent=text;
     els.vkState.classList.toggle('is-vk',type==='ok');
@@ -845,7 +869,21 @@
     renderMatches();
     if(!matchContext())showToast(state.matchMode==='product'?'Сначала рассчитайте изделие':'Выберите хотя бы одно условие');
   });
-  document.addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(!b)return;const url=decodeURIComponent(b.dataset.open);window.open(url,'_blank','noopener,noreferrer');});
+  document.addEventListener('click',e=>{
+    const imageButton=e.target.closest('[data-image-src]');
+    if(imageButton){
+      openPhotoLightbox(decodeURIComponent(imageButton.dataset.imageSrc||''),decodeURIComponent(imageButton.dataset.imageFallback||''),decodeURIComponent(imageButton.dataset.imageTitle||''));
+      return;
+    }
+    const b=e.target.closest('[data-open]');if(!b)return;const url=decodeURIComponent(b.dataset.open);window.open(url,'_blank','noopener,noreferrer');
+  });
+  els.photoLightboxClose?.addEventListener('click',closePhotoLightbox);
+  els.photoLightbox?.addEventListener('click',e=>{if(e.target===els.photoLightbox||e.target.classList?.contains('photo-lightbox-stage'))closePhotoLightbox();});
+  els.photoLightboxImage?.addEventListener('error',()=>{
+    const fallback=els.photoLightboxImage.dataset.fallback||'';
+    if(fallback&&els.photoLightboxImage.src!==fallback){els.photoLightboxImage.dataset.fallback='';els.photoLightboxImage.src=fallback;}
+  });
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&els.photoLightbox&&!els.photoLightbox.hidden)closePhotoLightbox();});
 
   renderYarns();renderGarments();renderSizes();updateGaugeHint();renderMatches();initVK();
 })();
