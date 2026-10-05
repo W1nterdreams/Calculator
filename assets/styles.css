@@ -434,11 +434,10 @@ body{
 /* 20261005 photozoom01 — enlarge yarn photos from match cards */
 .product-thumb-button{position:relative;display:block;width:72px;height:72px;flex:0 0 72px;padding:0;border:0;border-radius:18px;background:#f2f3f8;cursor:zoom-in;overflow:hidden}
 .product-thumb-button .product-thumb{display:block;width:100%;height:100%;border-radius:inherit;transition:transform .16s ease}
-.product-thumb-hint{position:absolute;right:5px;bottom:5px;width:22px;height:22px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,.92);color:var(--accent-deep);font-size:13px;font-weight:900;box-shadow:0 2px 8px rgba(30,20,60,.12);pointer-events:none}
 .product-thumb-button:focus-visible{outline:3px solid rgba(124,58,237,.28);outline-offset:3px}
 @media(hover:hover) and (pointer:fine){.product-thumb-button:hover .product-thumb{transform:scale(1.045)}}
 body.photo-lightbox-open{overflow:hidden}
-.photo-lightbox{position:fixed;inset:0;z-index:1000;padding:18px;background:rgba(20,16,30,.84);display:grid;place-items:center}
+.photo-lightbox{position:fixed;inset:0;z-index:1000;padding:18px;background:rgba(20,16,30,.84);display:grid;place-items:center;touch-action:none;overscroll-behavior:contain}
 .photo-lightbox[hidden]{display:none}
 .photo-lightbox-panel{width:min(100%,980px);max-height:calc(100vh - 36px);display:flex;flex-direction:column;min-width:0;background:#17131f;border:1px solid rgba(255,255,255,.16);border-radius:22px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.35)}
 .photo-lightbox-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 12px 10px 16px;color:#fff;background:#211a2e}
