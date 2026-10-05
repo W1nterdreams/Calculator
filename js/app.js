@@ -585,7 +585,7 @@
     if(p.color)tags.push(`Цвет: ${p.color}`);
     if(p.shade)tags.push(`Оттенок: ${p.shade}`);
     const fullImage=p.fullImageUrl||p.thumbUrl||'';
-    const visual=p.thumbUrl?`<button class="product-thumb-button" type="button" data-image-src="${encodeURIComponent(fullImage)}" data-image-fallback="${encodeURIComponent(p.thumbUrl)}" data-image-title="${encodeURIComponent(productTitle(p))}" aria-label="Увеличить фото: ${escapeHtml(productTitle(p))}"><img class="product-thumb" src="${escapeHtml(p.thumbUrl)}" alt="${escapeHtml(productTitle(p))}" loading="lazy" decoding="async"><span class="product-thumb-hint" aria-hidden="true">↗</span></button>`:'<div class="yarn-swatch"></div>';
+    const visual=p.thumbUrl?`<button class="product-thumb-button" type="button" data-image-src="${encodeURIComponent(fullImage)}" data-image-fallback="${encodeURIComponent(p.thumbUrl)}" data-image-title="${encodeURIComponent(productTitle(p))}" aria-label="Увеличить фото: ${escapeHtml(productTitle(p))}"><img class="product-thumb" src="${escapeHtml(p.thumbUrl)}" alt="${escapeHtml(productTitle(p))}" loading="lazy" decoding="async"></button>`:'<div class="yarn-swatch"></div>';
     const meta=[p.country].filter(Boolean).join(' · ');
     const hasNeed=Number.isFinite(match.needGrams)&&match.needGrams>0;
     const need=hasNeed?match.needGrams:null;
@@ -744,25 +744,52 @@
   }
 
   let photoLightboxPreviousFocus=null;
+  let photoLightboxSwipe=null;
+  function setNativeSwipeBackForPhoto(blocked){
+    const bridge=window.vkBridge;
+    if(!bridge||typeof bridge.send!=='function')return;
+    const standardMethod=()=>bridge.send('VKWebAppSetSwipeSettings',{history:!blocked});
+    const fallbackMethod=()=>bridge.send(blocked?'VKWebAppDisableSwipeBack':'VKWebAppEnableSwipeBack',{});
+    try{
+      const request=standardMethod();
+      if(request&&typeof request.catch==='function')request.catch(()=>{try{const fallback=fallbackMethod();if(fallback&&typeof fallback.catch==='function')fallback.catch(()=>{});}catch(_){}});
+    }catch(_){try{const fallback=fallbackMethod();if(fallback&&typeof fallback.catch==='function')fallback.catch(()=>{});}catch(__){}}
+  }
   function openPhotoLightbox(src,fallback,title){
     if(!els.photoLightbox||!els.photoLightboxImage||!src)return;
     photoLightboxPreviousFocus=document.activeElement;
+    photoLightboxSwipe=null;
     els.photoLightboxImage.dataset.fallback=fallback||'';
     els.photoLightboxImage.src=src;
     els.photoLightboxImage.alt=title||'Фото пряжи';
     els.photoLightboxTitle.textContent=title||'Фото пряжи';
     els.photoLightbox.hidden=false;
     document.body.classList.add('photo-lightbox-open');
+    setNativeSwipeBackForPhoto(true);
     requestAnimationFrame(()=>els.photoLightboxClose?.focus());
   }
   function closePhotoLightbox(){
     if(!els.photoLightbox||els.photoLightbox.hidden)return;
+    photoLightboxSwipe=null;
     els.photoLightbox.hidden=true;
     document.body.classList.remove('photo-lightbox-open');
     els.photoLightboxImage.removeAttribute('src');
     els.photoLightboxImage.dataset.fallback='';
+    setNativeSwipeBackForPhoto(false);
     if(photoLightboxPreviousFocus&&typeof photoLightboxPreviousFocus.focus==='function')photoLightboxPreviousFocus.focus();
     photoLightboxPreviousFocus=null;
+  }
+  function startPhotoSwipe(e){
+    if(!els.photoLightbox||els.photoLightbox.hidden||e.pointerType==='mouse')return;
+    photoLightboxSwipe={id:e.pointerId,x:e.clientX,y:e.clientY};
+    try{els.photoLightbox.setPointerCapture?.(e.pointerId);}catch(_){}
+  }
+  function endPhotoSwipe(e){
+    if(!photoLightboxSwipe||photoLightboxSwipe.id!==e.pointerId)return;
+    const dx=e.clientX-photoLightboxSwipe.x,dy=e.clientY-photoLightboxSwipe.y;
+    const distance=Math.hypot(dx,dy);
+    photoLightboxSwipe=null;
+    if(distance>=52){e.preventDefault();closePhotoLightbox();}
   }
 
   function setCatalogStatus(text,type=''){
@@ -879,6 +906,9 @@
   });
   els.photoLightboxClose?.addEventListener('click',closePhotoLightbox);
   els.photoLightbox?.addEventListener('click',e=>{if(e.target===els.photoLightbox||e.target.classList?.contains('photo-lightbox-stage'))closePhotoLightbox();});
+  els.photoLightbox?.addEventListener('pointerdown',startPhotoSwipe);
+  els.photoLightbox?.addEventListener('pointerup',endPhotoSwipe);
+  els.photoLightbox?.addEventListener('pointercancel',()=>{photoLightboxSwipe=null;});
   els.photoLightboxImage?.addEventListener('error',()=>{
     const fallback=els.photoLightboxImage.dataset.fallback||'';
     if(fallback&&els.photoLightboxImage.src!==fallback){els.photoLightboxImage.dataset.fallback='';els.photoLightboxImage.src=fallback;}
