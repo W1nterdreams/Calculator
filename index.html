@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261003-match09">
+  <link rel="stylesheet" href="assets/styles.css?v=20261005-photozoom01">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -222,11 +222,19 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
+  <div class="photo-lightbox" id="photoLightbox" role="dialog" aria-modal="true" aria-labelledby="photoLightboxTitle" hidden>
+    <div class="photo-lightbox-panel">
+      <div class="photo-lightbox-head"><strong id="photoLightboxTitle">Фото пряжи</strong><button class="photo-lightbox-close" id="photoLightboxClose" type="button" aria-label="Закрыть увеличенное фото">×</button></div>
+      <div class="photo-lightbox-stage"><img id="photoLightboxImage" alt=""></div>
+      <div class="photo-lightbox-note">Нажмите вне фотографии или ×, чтобы закрыть.</div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js"></script>
   <script src="js/config.js?v=20261005-albums11"></script>
   <script src="js/data.js?v=20261003-match09"></script>
   <script src="js/parser.js?v=20261003-match09"></script>
-  <script src="js/vk-catalog.js?v=20261003-match09"></script>
-  <script src="js/app.js?v=20261003-match09"></script>
+  <script src="js/vk-catalog.js?v=20261005-photozoom01"></script>
+  <script src="js/app.js?v=20261005-photozoom01"></script>
 </body>
 </html>
