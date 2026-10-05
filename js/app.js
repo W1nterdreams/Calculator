@@ -755,8 +755,30 @@
       if(request&&typeof request.catch==='function')request.catch(()=>{try{const fallback=fallbackMethod();if(fallback&&typeof fallback.catch==='function')fallback.catch(()=>{});}catch(_){}});
     }catch(_){try{const fallback=fallbackMethod();if(fallback&&typeof fallback.catch==='function')fallback.catch(()=>{});}catch(__){}}
   }
-  function openPhotoLightbox(src,fallback,title){
-    if(!els.photoLightbox||!els.photoLightboxImage||!src)return;
+  async function openPhotoLightbox(src,fallback,title){
+    if(!src)return;
+
+    // В мобильных клиентах VK используем нативный просмотрщик изображений.
+    // Он сам обрабатывает системный жест/кнопку «назад»: сначала закрывает фото,
+    // не отдавая этот жест на выход из Mini App.
+    const bridge=window.vkBridge;
+    if(bridge&&typeof bridge.send==='function'){
+      try{
+        await bridge.send('VKWebAppShowImages',{images:[src],start_index:0});
+        return;
+      }catch(error){
+        // Если полноразмерный URL по какой-либо причине не открылся, пробуем миниатюру.
+        if(fallback&&fallback!==src){
+          try{
+            await bridge.send('VKWebAppShowImages',{images:[fallback],start_index:0});
+            return;
+          }catch(_){}
+        }
+      }
+    }
+
+    // Запасной просмотрщик для обычного браузера/неподдерживаемой платформы.
+    if(!els.photoLightbox||!els.photoLightboxImage)return;
     photoLightboxPreviousFocus=document.activeElement;
     photoLightboxSwipe=null;
     els.photoLightboxImage.dataset.fallback=fallback||'';
