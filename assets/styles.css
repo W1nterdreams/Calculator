@@ -496,10 +496,14 @@ body.photo-lightbox-open{overflow:hidden}
 
 /* 20261006 — browse all available shades in pages of 30 */
 .shade-search-block{max-width:680px}
-.shade-show-all-toggle{display:inline-flex;align-items:center;gap:8px;margin-top:9px;color:#5a496f;font-size:12px;font-weight:800;cursor:pointer;min-height:32px}
+.shade-show-all-toggle{display:inline-flex;align-items:center;gap:8px;margin:0 0 9px;color:#5a496f;font-size:12px;font-weight:800;cursor:pointer;min-height:32px}
 .shade-show-all-toggle input{width:17px;height:17px;accent-color:var(--accent);flex:0 0 auto}
 .shade-all-options{margin-top:8px!important;margin-bottom:0!important}
 .shade-all-chip{border:0;padding:0;background:transparent;font:inherit;text-align:left}
 .shade-all-chip.is-selected span{background:var(--accent-soft);border-color:#b695fb;color:var(--accent-deep);box-shadow:0 0 0 2px rgba(123,73,228,.08)}
 .shade-more-btn{margin-top:9px}
 @media(max-width:520px){.shade-search-block{max-width:none}.shade-show-all-toggle{font-size:12px}.shade-more-btn{width:100%}}
+
+/* 20261006 — keep “show all shades” visible before autocomplete */
+.shade-search-block>.shade-search{margin-top:0}
+.shade-all-options:not([hidden])+.shade-more-btn+.shade-search,.shade-more-btn:not([hidden])+.shade-search{margin-top:10px}
