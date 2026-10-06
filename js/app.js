@@ -786,7 +786,7 @@
       ${meterageHtml}
       ${statsHtml}
       ${stockHtml}
-      ${(p.photoUrl||albumUrlForProduct(p))?`<div class="card-actions">${p.photoUrl?`<button class="card-action" data-open="${encodeURIComponent(p.photoUrl)}" type="button">Перейти в VK</button>`:''}${albumUrlForProduct(p)?`<button class="card-action" data-open="${encodeURIComponent(albumUrlForProduct(p))}" type="button">Перейти в альбом</button>`:''}</div>`:''}
+      ${(p.photoUrl||albumUrlForProduct(p))?`<div class="card-actions">${p.photoUrl?`<button class="card-action" data-open="${encodeURIComponent(p.photoUrl)}" type="button">Оставить комментарий в VK</button>`:''}${albumUrlForProduct(p)?`<button class="card-action" data-open="${encodeURIComponent(albumUrlForProduct(p))}" type="button">Перейти в альбом</button>`:''}</div>`:''}
     </article>`;
   }
 
