@@ -450,3 +450,23 @@ body.photo-lightbox-open{overflow:hidden}
 @media(max-width:520px){.photo-lightbox{padding:8px}.photo-lightbox-panel{max-height:calc(100vh - 16px);border-radius:16px}.photo-lightbox-stage{padding:6px}.photo-lightbox-stage img{max-height:calc(100vh - 130px)}.photo-lightbox-note{display:none}.photo-lightbox-head{padding:8px 8px 8px 12px}.photo-lightbox-head strong{font-size:12px}.photo-lightbox-close{width:42px;height:42px;flex-basis:42px}}
 @media(prefers-reduced-motion:reduce){.product-thumb-button .product-thumb{transition:none}}
 
+
+
+/* 20261006 — compact composition filter, shade autocomplete, bobbin stock details */
+.composition-filter-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.composition-filter-item{grid-template-columns:1fr;gap:7px;align-content:start;min-width:0;padding:9px}
+.composition-filter-item>label{min-width:0;line-height:1.2}.composition-filter-item>label span{min-width:0;overflow-wrap:anywhere}
+.composition-min{justify-content:space-between;gap:5px}.composition-min>span{white-space:nowrap;font-size:9.5px}.percent-filter{margin-left:auto}.percent-filter input{width:44px;padding:5px 3px 5px 6px}
+.shade-search{position:relative;max-width:460px}
+.shade-search>input{width:100%;height:43px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);font:inherit;font-size:14px;padding:9px 12px;outline:none}
+.shade-search>input:focus{border-color:#b695fb;box-shadow:0 0 0 3px rgba(123,73,228,.12)}
+.shade-suggestions{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 5px);max-height:220px;overflow:auto;padding:5px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 28px rgba(62,42,90,.14)}
+.shade-suggestion{display:block;width:100%;min-height:38px;border:0;border-radius:8px;background:transparent;color:var(--text);font:inherit;font-size:12px;text-align:left;padding:8px 9px;cursor:pointer}
+.shade-suggestion:hover,.shade-suggestion:focus{background:var(--accent-soft);outline:none}.shade-suggestion-empty{padding:9px;color:var(--muted);font-size:11px}
+.stock-bobbins{display:block;margin-top:3px;color:var(--muted);font-size:9.5px;line-height:1.25}
+@media(max-width:520px){
+  .composition-filter-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .composition-filter-item{padding:7px;gap:6px}.composition-filter-item>label{font-size:10.5px;gap:5px}.composition-filter-item>label input{width:14px;height:14px;flex:0 0 auto}
+  .composition-min{display:grid;grid-template-columns:1fr auto;align-items:center}.composition-min>span{font-size:8.5px}.percent-filter input{width:36px;font-size:10.5px}.percent-filter b{padding-right:5px;font-size:9px}
+  .shade-search{max-width:none}.shade-search>input{font-size:16px}
+}
