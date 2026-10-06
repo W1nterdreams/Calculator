@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261006-meterage-toggle01">
+  <link rel="stylesheet" href="assets/styles.css?v=20261006-shades-all01">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -216,9 +216,14 @@
             <div class="match-criterion">
               <div class="match-criterion-label"><span class="criterion-number">5</span><label class="match-filter-toggle"><input id="matchShadeEnabled" type="checkbox"><span>Оттенок</span></label></div>
               <div class="match-criterion-control">
-                <div class="shade-search" id="matchShadeSearch" hidden>
-                  <input id="matchShadeQuery" type="text" autocomplete="off" placeholder="Начните вводить оттенок…" aria-autocomplete="list" aria-controls="matchShadeSuggestions">
-                  <div id="matchShadeSuggestions" class="shade-suggestions" role="listbox" hidden></div>
+                <div class="shade-search-block" id="matchShadeSearch" hidden>
+                  <div class="shade-search">
+                    <input id="matchShadeQuery" type="text" autocomplete="off" placeholder="Начните вводить оттенок…" aria-autocomplete="list" aria-controls="matchShadeSuggestions">
+                    <div id="matchShadeSuggestions" class="shade-suggestions" role="listbox" hidden></div>
+                  </div>
+                  <label class="shade-show-all-toggle"><input id="matchShadeShowAll" type="checkbox"><span>Показать все оттенки</span></label>
+                  <div id="matchShadeAllList" class="filter-options shade-all-options" hidden></div>
+                  <button id="matchShadeMoreBtn" class="secondary-btn tiny shade-more-btn" type="button" hidden>Показать ещё</button>
                 </div>
                 <small id="matchShadeHint">Подсказки оттенков строятся только по пряже, оставшейся после предыдущих условий.</small>
               </div>
@@ -255,6 +260,6 @@
   <script src="js/data.js?v=20261003-match09"></script>
   <script src="js/parser.js?v=20261006-stock-bobbins01"></script>
   <script src="js/vk-catalog.js?v=20261005-photozoom01"></script>
-  <script src="js/app.js?v=20261006-meterage-toggle01"></script>
+  <script src="js/app.js?v=20261006-shades-all01"></script>
 </body>
 </html>
