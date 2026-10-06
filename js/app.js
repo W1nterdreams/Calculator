@@ -1107,9 +1107,8 @@
     state.matchFilters.shadeEnabled=els.matchShadeEnabled.checked;
     state.matchShadeVisibleCount=30;
     if(!state.matchFilters.shadeEnabled)state.matchShadeShowAll=false;
+    if(els.matchShadeSuggestions)els.matchShadeSuggestions.hidden=true;
     state.matchSearchRequested=false;renderMatches();
-    if(state.matchFilters.shadeEnabled){requestAnimationFrame(()=>{els.matchShadeQuery.focus();renderShadeSuggestions();});}
-    else if(els.matchShadeSuggestions)els.matchShadeSuggestions.hidden=true;
   });
   els.matchShadeShowAll?.addEventListener('change',()=>{
     state.matchShadeShowAll=els.matchShadeShowAll.checked;
