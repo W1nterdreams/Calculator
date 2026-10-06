@@ -507,3 +507,18 @@ body.photo-lightbox-open{overflow:hidden}
 /* 20261006 — keep “show all shades” visible before autocomplete */
 .shade-search-block>.shade-search{margin-top:0}
 .shade-all-options:not([hidden])+.shade-more-btn+.shade-search,.shade-more-btn:not([hidden])+.shade-search{margin-top:10px}
+
+
+/* 20261006 — result card layout: larger photo, characteristics under title */
+.product-card-top{align-items:flex-start}
+.product-card-info{min-width:0;flex:1}
+.product-card-info .product-card-characteristics{margin-top:8px}
+.product-thumb-button{width:88px;height:88px;flex-basis:88px;border-radius:19px}
+.product-card-top>.yarn-swatch{width:88px;height:88px;flex-basis:88px;border-radius:19px}
+@media(max-width:520px){
+  .product-card-top{gap:10px}
+  .product-thumb-button{width:84px;height:84px;flex-basis:84px;border-radius:17px}
+  .product-card-top>.yarn-swatch{width:84px;height:84px;flex-basis:84px;border-radius:17px}
+  .product-card-info .product-card-characteristics{margin-top:7px;gap:5px}
+  .product-card-info .product-card-characteristics .tag{font-size:10px;padding:4px 6px}
+}
