@@ -13,6 +13,6 @@
     DB_NAME:'mania-yarn-vk-catalog',
     DB_VERSION:1,
     DB_STORE:'catalog',
-    DB_KEY:'group-173909287-albums11-maniapryazhi-v3'
+    DB_KEY:'group-173909287-albums11-maniapryazhi-v4-bobbins'
   };
 })();

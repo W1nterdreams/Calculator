@@ -58,7 +58,49 @@
     if(m){const price=num(m[1]),basis=num(m[2]);return{price,basisGrams:basis,pricePer100g:Math.round(price/basis*100)}}
     return null;
   }
-  function parseStock(text){const m=/(?:наличие|в\s+наличии|остаток|осталось|есть|вес)\s*[:\-–—]?\s*(\d+(?:[.,]\d+)?)\s*(кг|г|гр|грамм\w*)/i.exec(String(text||''));return m?Math.round(grams(m[1],m[2])):null;}
+  function parseStockDetailed(text){
+    const source=String(text||'').replace(/\u00a0/g,' ').trim();
+    const label=/(?:наличие|в\s+наличии|остаток|осталось|есть|вес)\s*[:\-–—]?\s*/i;
+    const lm=label.exec(source);if(!lm)return {totalGrams:null,bobbinsGrams:[]};
+    let tail=source.slice(lm.index+lm[0].length).split(/\n|\r|\.(?=\s|$)/)[0].trim();
+    if(!tail)return {totalGrams:null,bobbinsGrams:[]};
+
+    // Сначала разбираем случаи, где единица указана у каждой бобины:
+    // «0,45 кг, 0,62 кг» или «450 г + 620 г».
+    const explicit=[];let em;
+    const eachRe=/(\d+(?:[.,]\d+)?)\s*(кг|гр\.?|грам(?:м|ма|мов|мы)?|г)(?=\s|$|[,;+\/])/gi;
+    while((em=eachRe.exec(tail))){const g=grams(em[1],em[2]);if(Number.isFinite(g)&&g>0)explicit.push(Math.round(g));}
+    if(explicit.length>1)return {totalGrams:explicit.reduce((a,b)=>a+b,0),bobbinsGrams:explicit};
+
+    // Если единица одна в конце, допускаем перечень весов бобин через запятую,
+    // «+», «/» или «;»: «430, 520, 610 г» -> 1560 г.
+    const um=/(кг|гр\.?|грам(?:м|ма|мов|мы)?|г)(?=\s|$|[.,;+\/])/i.exec(tail);
+    if(!um){
+      // Для старых карточек допускаем перечень нескольких целых весов без единицы:
+      // «Наличие: 430, 520, 610». Одинокое число без единицы намеренно не угадываем.
+      const rawList=tail.split(/\b(?:цена|руб|₽)\b/i)[0].trim();
+      const looksLikeList=/[+;/]/.test(rawList)||/,\s+\d/.test(rawList)||/^\d+(?:,\d+){2,}$/.test(rawList);
+      if(looksLikeList){
+        const values=rawList.split(/\s*(?:\+|;|\/|,\s+)\s*|(?<=\d),(?=\d{2,}(?:,|$))/).map(x=>num(x.trim())).filter(x=>Number.isFinite(x)&&x>=10);
+        if(values.length>1){const bobbins=values.map(Math.round);return {totalGrams:bobbins.reduce((a,b)=>a+b,0),bobbinsGrams:bobbins};}
+      }
+      return {totalGrams:null,bobbinsGrams:[]};
+    }
+    const unit=um[1];let numberPart=tail.slice(0,um.index).trim();
+    numberPart=numberPart.replace(/\([^)]*\)/g,' ').trim();
+    const commaAsGramList=/^(?:\d{2,4}),\d{3,4}$/.test(numberPart)&&!/^кг$/i.test(unit);
+    const hasListSeparator=/[+;/]/.test(numberPart)||/,\s+\d/.test(numberPart)||/^\d+(?:,\d+){2,}$/.test(numberPart)||commaAsGramList;
+    let values=[];
+    if(hasListSeparator){
+      values=numberPart.split(/\s*(?:\+|;|\/|,\s+)\s*|(?<=\d),(?=\d{2,}(?:,|$))/).map(x=>x.trim()).filter(Boolean).map(num).filter(x=>Number.isFinite(x)&&x>0);
+    }else{
+      const v=num(numberPart.match(/\d+(?:[.,]\d+)?/)?.[0]||'');if(Number.isFinite(v)&&v>0)values=[v];
+    }
+    if(!values.length&&explicit.length===1)return {totalGrams:explicit[0],bobbinsGrams:explicit};
+    const bobbins=values.map(v=>Math.round(/кг/i.test(unit)?v*1000:v));
+    return {totalGrams:bobbins.length?bobbins.reduce((a,b)=>a+b,0):null,bobbinsGrams:bobbins};
+  }
+  function parseStock(text){return parseStockDetailed(text).totalGrams;}
   function parseColor(text){
     let m=/\bCol\.?\s*([^\.\n\r]+?)(?=\.\s|$)/i.exec(String(text||''));if(m)return clean(m[1]);
     m=/(?:цвет|цвета)\s*[:\-–—]?\s*([^\.\n\r]+)/i.exec(String(text||''));return m?clean(m[1]):null;
@@ -92,7 +134,8 @@
     const price=parsePrice(structured.price||legacy);
     const brand=structured.brand||parseBrand(legacy);
     const composition=parseComposition(structured.composition||legacy);
-    const stockValue=parseStock(structured.stock?`Остаток: ${structured.stock}`:legacy);
+    const stockInfo=parseStockDetailed(structured.stock?`Остаток: ${structured.stock}`:legacy);
+    const stockValue=stockInfo.totalGrams;
     const properties=[];if(/пайетк/i.test(source))properties.push('пайетки');if(/экстрафайн|extra\s*fine/i.test(source))properties.push('экстрафайн');if(/гребенн/i.test(source))properties.push('гребенной');if(/моточн/i.test(source))properties.push('моточная');if(/бобин/i.test(source))properties.push('бобинная');
     const confidence={meterage:meterage?'high':'none',composition:composition.length?'high':'none',stock:stockValue!=null?'high':'none',price:price?'high':'none'};
     return {
@@ -106,9 +149,10 @@
       shade:structured.shade||null,
       composition,properties,meterage,yarnCount:parseYarnCount(legacy),
       stockGrams:stockValue,
+      stockBobbinsGrams:stockInfo.bobbinsGrams,
       pricePer100g:price?price.pricePer100g:null,
       confidence
     };
   }
-  window.ManiaParser={parseDescription,parseMeterage,parseComposition};
+  window.ManiaParser={parseDescription,parseMeterage,parseComposition,parseStock,parseStockDetailed};
 })();

@@ -31,7 +31,7 @@
     matchMode:'characteristics',
     matchManualMeterage:'',
     matchSearchRequested:false,
-    matchFilters:{colorEnabled:false,colors:[],compositionEnabled:false,materials:{}}
+    matchFilters:{colorEnabled:false,colors:[],compositionEnabled:false,materials:{},shadeEnabled:false,shadeQuery:''}
   };
 
   const els={
@@ -40,7 +40,7 @@
     sampleStitches:$('#sampleStitches'),sampleRows:$('#sampleRows'),sampleWidth:$('#sampleWidth'),sampleHeight:$('#sampleHeight'),sampleWeight:$('#sampleWeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),sampleGaugeResult:$('#sampleGaugeResult'),sampleRowsGaugeResult:$('#sampleRowsGaugeResult'),areaConsumptionResult:$('#areaConsumptionResult'),areaConsumptionHint:$('#areaConsumptionHint'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
     sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productDimensionsCard:$('#productDimensionsCard'),productDimensionsFields:$('#productDimensionsFields'),productDimensionsHint:$('#productDimensionsHint'),productDimensionSummary:$('#productDimensionSummary'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
     refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid'),
-    matchCount:$('#matchCount'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),
+    matchCount:$('#matchCount'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),matchShadeEnabled:$('#matchShadeEnabled'),matchShadeSearch:$('#matchShadeSearch'),matchShadeQuery:$('#matchShadeQuery'),matchShadeSuggestions:$('#matchShadeSuggestions'),matchShadeHint:$('#matchShadeHint'),
     matchModeCharacteristics:$('#matchModeCharacteristics'),matchModeProduct:$('#matchModeProduct'),manualMatchInput:$('#manualMatchInput'),matchManualMeterage:$('#matchManualMeterage'),productMatchSource:$('#productMatchSource'),productMatchSourceText:$('#productMatchSourceText'),runMatchSearchBtn:$('#runMatchSearchBtn'),
     photoLightbox:$('#photoLightbox'),photoLightboxImage:$('#photoLightboxImage'),photoLightboxTitle:$('#photoLightboxTitle'),photoLightboxClose:$('#photoLightboxClose')
   };
@@ -526,6 +526,32 @@
     return [...map.entries()].map(([key,label])=>({key,label})).sort((a,b)=>a.label.localeCompare(b.label,'ru'));
   }
 
+  function catalogShades(){
+    const map=new Map();
+    for(const p of state.vkCatalog){
+      const raw=String(p?.shade||'').trim();if(!raw)continue;
+      const key=normalizeFilterText(raw);if(!map.has(key))map.set(key,raw);
+    }
+    return [...map.entries()].map(([key,label])=>({key,label})).sort((a,b)=>a.label.localeCompare(b.label,'ru'));
+  }
+
+  function matchingShadeSuggestions(query){
+    const q=normalizeFilterText(query);if(!q)return catalogShades().slice(0,8);
+    return catalogShades().filter(x=>x.key.includes(q)).sort((a,b)=>{
+      const ap=a.key.startsWith(q)?0:1,bp=b.key.startsWith(q)?0:1;
+      return ap-bp||a.label.localeCompare(b.label,'ru');
+    }).slice(0,8);
+  }
+
+  function renderShadeSuggestions(){
+    if(!els.matchShadeSuggestions)return;
+    if(!state.matchFilters.shadeEnabled){els.matchShadeSuggestions.hidden=true;els.matchShadeSuggestions.innerHTML='';return;}
+    const items=matchingShadeSuggestions(state.matchFilters.shadeQuery);
+    if(!items.length){els.matchShadeSuggestions.innerHTML='<div class="shade-suggestion-empty">Совпадений в каталоге нет</div>';els.matchShadeSuggestions.hidden=false;return;}
+    els.matchShadeSuggestions.innerHTML=items.map(x=>`<button type="button" class="shade-suggestion" data-match-shade="${encodeURIComponent(x.label)}" role="option">${escapeHtml(x.label)}</button>`).join('');
+    els.matchShadeSuggestions.hidden=false;
+  }
+
   function renderMatchFilterOptions(){
     const colors=catalogColors();
     const colorKeys=new Set(colors.map(x=>x.key));
@@ -559,6 +585,11 @@
         </div>`;
       }).join('');
     }
+
+    els.matchShadeEnabled.checked=state.matchFilters.shadeEnabled;
+    els.matchShadeSearch.hidden=!state.matchFilters.shadeEnabled;
+    if(els.matchShadeQuery.value!==state.matchFilters.shadeQuery)els.matchShadeQuery.value=state.matchFilters.shadeQuery;
+    els.matchShadeHint.textContent=catalogShades().length?'Введите часть названия оттенка. Подсказки формируются из каталога.':'В каталоге пока нет заполненных оттенков.';
   }
 
   function productPassesColor(p){
@@ -578,6 +609,12 @@
     });
   }
 
+  function productPassesShade(p){
+    if(!state.matchFilters.shadeEnabled)return true;
+    const q=normalizeFilterText(state.matchFilters.shadeQuery);if(!q)return true;
+    return normalizeFilterText(p?.shade).includes(q);
+  }
+
   function productCard(p,match){
     const tags=[];
     if(p.meterage)tags.push(`${fmt(p.meterage.metersPer100g)} м/100 г`);
@@ -590,6 +627,8 @@
     const hasNeed=Number.isFinite(match.needGrams)&&match.needGrams>0;
     const need=hasNeed?match.needGrams:null;
     const stock=p.stockGrams;
+    const stockBobbins=Array.isArray(p.stockBobbinsGrams)?p.stockBobbinsGrams.filter(x=>Number.isFinite(Number(x))&&Number(x)>0).map(Number):[];
+    const stockBreakdown=stockBobbins.length>1?`<small class="stock-bobbins">${stockBobbins.map(x=>fmt(x)).join(' + ')} г</small>`:'';
     let stockHtml='';
     let statsHtml='';
     if(hasNeed){
@@ -600,10 +639,10 @@
           ?`<div class="stock-state enough"><span>Пряжи хватает</span><b>Останется ≈ ${fmt(delta)} г</b></div>`
           :`<div class="stock-state shortage"><span>Пряжи не хватает</span><b>Не хватает ≈ ${fmt(Math.abs(delta))} г</b></div>`;
       }
-      statsHtml=`<div class="product-stats"><div><span>Нужно с запасом</span><b>≈ ${fmt(need)} г</b></div><div><span>В наличии</span><b>${stock==null?'—':`${fmt(stock)} г`}</b></div>${p.pricePer100g?`<div><span>Ориентировочная стоимость</span><b>≈ ${fmt(need/100*p.pricePer100g)} ₽</b></div>`:''}</div>`;
+      statsHtml=`<div class="product-stats"><div><span>Нужно с запасом</span><b>≈ ${fmt(need)} г</b></div><div><span>В наличии</span><b>${stock==null?'—':`${fmt(stock)} г`}</b>${stock==null?'':stockBreakdown}</div>${p.pricePer100g?`<div><span>Ориентировочная стоимость</span><b>≈ ${fmt(need/100*p.pricePer100g)} ₽</b></div>`:''}</div>`;
       stockHtml=stockState;
     }else{
-      statsHtml=`<div class="product-stats characteristic-stats">${stock!=null?`<div><span>В наличии</span><b>${fmt(stock)} г</b></div>`:''}${p.pricePer100g?`<div><span>Цена</span><b>${fmt(p.pricePer100g)} ₽ / 100 г</b></div>`:''}</div>`;
+      statsHtml=`<div class="product-stats characteristic-stats">${stock!=null?`<div><span>В наличии</span><b>${fmt(stock)} г</b>${stockBreakdown}</div>`:''}${p.pricePer100g?`<div><span>Цена</span><b>${fmt(p.pricePer100g)} ₽ / 100 г</b></div>`:''}</div>`;
     }
     let meterageHtml='';
     if(match.meterageMatched&&p.meterage){
@@ -624,6 +663,7 @@
 
   function hasSelectedColor(){return state.matchFilters.colorEnabled&&state.matchFilters.colors.length>0;}
   function hasSelectedComposition(){return state.matchFilters.compositionEnabled&&Object.keys(state.matchFilters.materials).length>0;}
+  function hasSelectedShade(){return state.matchFilters.shadeEnabled&&normalizeFilterText(state.matchFilters.shadeQuery).length>0;}
 
   function matchContext(){
     if(state.matchMode==='product'){
@@ -635,8 +675,9 @@
     const target=rawTarget&&rawTarget>0?rawTarget:null;
     const hasColor=hasSelectedColor();
     const hasComposition=hasSelectedComposition();
-    if(!target&&!hasColor&&!hasComposition)return null;
-    return {mode:'characteristics',target,hasMeterage:!!target,hasColor,hasComposition};
+    const hasShade=hasSelectedShade();
+    if(!target&&!hasColor&&!hasComposition&&!hasShade)return null;
+    return {mode:'characteristics',target,hasMeterage:!!target,hasColor,hasComposition,hasShade};
   }
 
   function renderMatchMode(){
@@ -690,7 +731,7 @@
       }else if(ctx){
         setMatchPrompt('Условия готовы','Нажмите «Найти», чтобы показать подходящую пряжу.');
       }else{
-        setMatchPrompt('Задайте условия поиска','Можно искать по метражу, цвету, составу или их сочетанию. Затем нажмите «Найти».');
+        setMatchPrompt('Задайте условия поиска','Можно искать по метражу, цвету, составу, оттенку или их сочетанию. Затем нажмите «Найти».');
       }
       return;
     }
@@ -698,7 +739,7 @@
     if(!ctx){
       els.matchCount.textContent='0 вариантов';
       if(state.matchMode==='product')setMatchPrompt('Сначала рассчитайте изделие','Либо переключитесь на «По характеристикам».');
-      else setMatchPrompt('Выберите хотя бы одно условие','Укажите метраж, выберите цвет, состав или несколько условий одновременно.');
+      else setMatchPrompt('Выберите хотя бы одно условие','Укажите метраж, выберите цвет, состав, оттенок или несколько условий одновременно.');
       return;
     }
 
@@ -712,6 +753,7 @@
       if(ctx.target)bits.push(`метраж ${fmt(ctx.target)} м/100 г`);
       if(ctx.hasColor)bits.push('выбранный цвет');
       if(ctx.hasComposition)bits.push('выбранный состав');
+      if(ctx.hasShade)bits.push(`оттенок «${state.matchFilters.shadeQuery.trim()}»`);
       els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>Подбор по характеристикам</h3><p>Учитываем: ${escapeHtml(bits.join(' · '))}.</p></div>`;
     }
 
@@ -723,7 +765,7 @@
       }else{
         b={plies:1,effective:p.meterage?Number(p.meterage.metersPer100g):null,deviation:null,absDeviation:Number.POSITIVE_INFINITY,meterageMatched:false};
       }
-      if(!productPassesColor(p)||!productPassesComposition(p))return null;
+      if(!productPassesColor(p)||!productPassesComposition(p)||!productPassesShade(p))return null;
       if(ctx.mode==='product'){
         const needRaw=ctx.requiredMeters/b.effective*100;
         const need=Math.ceil(needRaw/5)*5;
@@ -898,6 +940,25 @@
     state.matchFilters.compositionEnabled=els.matchCompositionEnabled.checked;
     state.matchSearchRequested=false;renderMatches();
   });
+  els.matchShadeEnabled.addEventListener('change',()=>{
+    state.matchFilters.shadeEnabled=els.matchShadeEnabled.checked;
+    state.matchSearchRequested=false;renderMatches();
+    if(state.matchFilters.shadeEnabled){requestAnimationFrame(()=>{els.matchShadeQuery.focus();renderShadeSuggestions();});}
+    else if(els.matchShadeSuggestions)els.matchShadeSuggestions.hidden=true;
+  });
+  els.matchShadeQuery.addEventListener('input',()=>{
+    state.matchFilters.shadeQuery=els.matchShadeQuery.value;
+    state.matchSearchRequested=false;
+    renderMatches();
+    renderShadeSuggestions();
+  });
+  els.matchShadeQuery.addEventListener('focus',renderShadeSuggestions);
+  els.matchShadeSuggestions.addEventListener('click',e=>{
+    const b=e.target.closest('[data-match-shade]');if(!b)return;
+    const value=decodeURIComponent(b.dataset.matchShade||'');
+    state.matchFilters.shadeQuery=value;els.matchShadeQuery.value=value;els.matchShadeSuggestions.hidden=true;
+    state.matchSearchRequested=false;renderMatches();
+  });
   els.matchCompositionOptions.addEventListener('change',e=>{
     const material=e.target.closest('[data-match-material]');
     if(material){
@@ -919,6 +980,7 @@
     if(!matchContext())showToast(state.matchMode==='product'?'Сначала рассчитайте изделие':'Выберите хотя бы одно условие');
   });
   document.addEventListener('click',e=>{
+    if(els.matchShadeSuggestions&&!e.target.closest('#matchShadeSearch'))els.matchShadeSuggestions.hidden=true;
     const imageButton=e.target.closest('[data-image-src]');
     if(imageButton){
       openPhotoLightbox(decodeURIComponent(imageButton.dataset.imageSrc||''),decodeURIComponent(imageButton.dataset.imageFallback||''),decodeURIComponent(imageButton.dataset.imageTitle||''));
