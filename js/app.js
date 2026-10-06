@@ -31,7 +31,7 @@
     matchMode:'characteristics',
     matchManualMeterage:'',
     matchSearchRequested:false,
-    matchFilters:{albumEnabled:false,albumIds:[],colorEnabled:false,colors:[],compositionEnabled:false,materials:{},shadeEnabled:false,shadeQuery:''}
+    matchFilters:{albumEnabled:false,albumIds:[],meterageEnabled:false,colorEnabled:false,colors:[],compositionEnabled:false,materials:{},shadeEnabled:false,shadeQuery:''}
   };
 
   const els={
@@ -40,7 +40,7 @@
     sampleStitches:$('#sampleStitches'),sampleRows:$('#sampleRows'),sampleWidth:$('#sampleWidth'),sampleHeight:$('#sampleHeight'),sampleWeight:$('#sampleWeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),sampleGaugeResult:$('#sampleGaugeResult'),sampleRowsGaugeResult:$('#sampleRowsGaugeResult'),areaConsumptionResult:$('#areaConsumptionResult'),areaConsumptionHint:$('#areaConsumptionHint'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
     sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productDimensionsCard:$('#productDimensionsCard'),productDimensionsFields:$('#productDimensionsFields'),productDimensionsHint:$('#productDimensionsHint'),productDimensionSummary:$('#productDimensionSummary'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
     refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid'),
-    matchCount:$('#matchCount'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),matchShadeEnabled:$('#matchShadeEnabled'),matchShadeSearch:$('#matchShadeSearch'),matchShadeQuery:$('#matchShadeQuery'),matchShadeSuggestions:$('#matchShadeSuggestions'),matchShadeHint:$('#matchShadeHint'),matchAlbumEnabled:$('#matchAlbumEnabled'),matchAlbumOptions:$('#matchAlbumOptions'),matchAlbumHint:$('#matchAlbumHint'),
+    matchCount:$('#matchCount'),matchMeterageEnabled:$('#matchMeterageEnabled'),matchMeterageControl:$('#matchMeterageControl'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),matchShadeEnabled:$('#matchShadeEnabled'),matchShadeSearch:$('#matchShadeSearch'),matchShadeQuery:$('#matchShadeQuery'),matchShadeSuggestions:$('#matchShadeSuggestions'),matchShadeHint:$('#matchShadeHint'),matchAlbumEnabled:$('#matchAlbumEnabled'),matchAlbumOptions:$('#matchAlbumOptions'),matchAlbumHint:$('#matchAlbumHint'),
     matchModeCharacteristics:$('#matchModeCharacteristics'),matchModeProduct:$('#matchModeProduct'),manualMatchInput:$('#manualMatchInput'),matchManualMeterage:$('#matchManualMeterage'),productMatchSource:$('#productMatchSource'),productMatchSourceText:$('#productMatchSourceText'),runMatchSearchBtn:$('#runMatchSearchBtn'),
     photoLightbox:$('#photoLightbox'),photoLightboxImage:$('#photoLightboxImage'),photoLightboxTitle:$('#photoLightboxTitle'),photoLightboxClose:$('#photoLightboxClose')
   };
@@ -554,6 +554,7 @@
     if(state.matchMode==='product'){
       const n=Number(state.product?.meterage);return Number.isFinite(n)&&n>0?n:null;
     }
+    if(!state.matchFilters.meterageEnabled)return null;
     const n=numeric(els.matchManualMeterage?.value??state.matchManualMeterage);
     return Number.isFinite(n)&&n>0?n:null;
   }
@@ -768,7 +769,7 @@
       const r=state.product;
       return {mode:'product',target:r.meterage,requiredMeters:r.requiredMetersWithReserve||r.requiredMeters,product:r,hasMeterage:true};
     }
-    const rawTarget=numeric(els.matchManualMeterage.value);
+    const rawTarget=state.matchFilters.meterageEnabled?numeric(els.matchManualMeterage.value):null;
     const target=rawTarget&&rawTarget>0?rawTarget:null;
     const hasColor=hasSelectedColor();
     const hasComposition=hasSelectedComposition();
@@ -782,6 +783,9 @@
     const isProduct=state.matchMode==='product';
     els.matchModeCharacteristics.classList.toggle('is-active',!isProduct);
     els.matchModeProduct.classList.toggle('is-active',isProduct);
+    els.matchMeterageEnabled.checked=isProduct||state.matchFilters.meterageEnabled;
+    els.matchMeterageEnabled.disabled=isProduct;
+    els.matchMeterageControl.hidden=!isProduct&&!state.matchFilters.meterageEnabled;
     els.manualMatchInput.hidden=isProduct;
     els.productMatchSource.hidden=!isProduct;
     if(isProduct){
@@ -805,7 +809,7 @@
     renderMatchFilterOptions();
     const tolPct=Math.round(matchTolerance()*100);
     const ctx=matchContext();
-    const manualTarget=numeric(els.matchManualMeterage.value);
+    const manualTarget=state.matchFilters.meterageEnabled?numeric(els.matchManualMeterage.value):null;
     if(state.matchMode==='product'){
       if(state.product){
         els.matchMeterageText.textContent=`${fmt(state.product.meterage)} м/100 г · допуск ±${tolPct}%`;
@@ -819,7 +823,7 @@
       els.matchMeterageHint.textContent=`Проверяем 1–${maxMatchPlies()} сложений одной и той же пряжи.`;
     }else{
       els.matchMeterageText.textContent='Метраж не используется';
-      els.matchMeterageHint.textContent='Оставьте поле пустым, если метраж не важен.';
+      els.matchMeterageHint.textContent='Введите нужный метраж на 100 г.';
     }
 
     if(!state.matchSearchRequested){
@@ -1042,6 +1046,12 @@
     if(clearUnavailableShadeAfterCascade())renderMatches();
   }
 
+  els.matchMeterageEnabled.addEventListener('change',()=>{
+    if(state.matchMode==='product')return;
+    state.matchFilters.meterageEnabled=els.matchMeterageEnabled.checked;
+    renderAfterCascadeChange();
+    if(state.matchFilters.meterageEnabled)requestAnimationFrame(()=>els.matchManualMeterage.focus());
+  });
   els.matchManualMeterage.addEventListener('input',()=>{state.matchManualMeterage=els.matchManualMeterage.value;renderAfterCascadeChange();});
   els.matchColorEnabled.addEventListener('change',()=>{
     state.matchFilters.colorEnabled=els.matchColorEnabled.checked;
