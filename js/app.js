@@ -31,7 +31,7 @@
     matchMode:'characteristics',
     matchManualMeterage:'',
     matchSearchRequested:false,
-    matchFilters:{colorEnabled:false,colors:[],compositionEnabled:false,materials:{},shadeEnabled:false,shadeQuery:''}
+    matchFilters:{colorEnabled:false,colors:[],compositionEnabled:false,materials:{},shadeEnabled:false,shadeQuery:'',albumEnabled:false,albumId:''}
   };
 
   const els={
@@ -40,7 +40,7 @@
     sampleStitches:$('#sampleStitches'),sampleRows:$('#sampleRows'),sampleWidth:$('#sampleWidth'),sampleHeight:$('#sampleHeight'),sampleWeight:$('#sampleWeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),sampleGaugeResult:$('#sampleGaugeResult'),sampleRowsGaugeResult:$('#sampleRowsGaugeResult'),areaConsumptionResult:$('#areaConsumptionResult'),areaConsumptionHint:$('#areaConsumptionHint'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
     sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productDimensionsCard:$('#productDimensionsCard'),productDimensionsFields:$('#productDimensionsFields'),productDimensionsHint:$('#productDimensionsHint'),productDimensionSummary:$('#productDimensionSummary'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
     refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid'),
-    matchCount:$('#matchCount'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),matchShadeEnabled:$('#matchShadeEnabled'),matchShadeSearch:$('#matchShadeSearch'),matchShadeQuery:$('#matchShadeQuery'),matchShadeSuggestions:$('#matchShadeSuggestions'),matchShadeHint:$('#matchShadeHint'),
+    matchCount:$('#matchCount'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),matchShadeEnabled:$('#matchShadeEnabled'),matchShadeSearch:$('#matchShadeSearch'),matchShadeQuery:$('#matchShadeQuery'),matchShadeSuggestions:$('#matchShadeSuggestions'),matchShadeHint:$('#matchShadeHint'),matchAlbumEnabled:$('#matchAlbumEnabled'),matchAlbumControl:$('#matchAlbumControl'),matchAlbumSelect:$('#matchAlbumSelect'),matchAlbumHint:$('#matchAlbumHint'),
     matchModeCharacteristics:$('#matchModeCharacteristics'),matchModeProduct:$('#matchModeProduct'),manualMatchInput:$('#manualMatchInput'),matchManualMeterage:$('#matchManualMeterage'),productMatchSource:$('#productMatchSource'),productMatchSourceText:$('#productMatchSourceText'),runMatchSearchBtn:$('#runMatchSearchBtn'),
     photoLightbox:$('#photoLightbox'),photoLightboxImage:$('#photoLightboxImage'),photoLightboxTitle:$('#photoLightboxTitle'),photoLightboxClose:$('#photoLightboxClose')
   };
@@ -535,6 +535,16 @@
     return [...map.entries()].map(([key,label])=>({key,label})).sort((a,b)=>a.label.localeCompare(b.label,'ru'));
   }
 
+  function catalogAlbums(){
+    const map=new Map();
+    for(const p of state.vkCatalog){
+      const id=Number(p?.albumId);if(!Number.isInteger(id)||id<=0)continue;
+      const title=String(p?.albumTitle||`Альбом ${id}`).trim()||`Альбом ${id}`;
+      if(!map.has(id))map.set(id,title);
+    }
+    return [...map.entries()].map(([id,title])=>({id,title})).sort((a,b)=>a.title.localeCompare(b.title,'ru'));
+  }
+
   function matchingShadeSuggestions(query){
     const q=normalizeFilterText(query);if(!q)return catalogShades().slice(0,6);
     return catalogShades().filter(x=>x.key.includes(q)).sort((a,b)=>{
@@ -610,6 +620,14 @@
     els.matchShadeSearch.hidden=!state.matchFilters.shadeEnabled;
     if(els.matchShadeQuery.value!==state.matchFilters.shadeQuery)els.matchShadeQuery.value=state.matchFilters.shadeQuery;
     els.matchShadeHint.textContent=catalogShades().length?'Введите часть названия оттенка. Подсказки формируются из каталога.':'В каталоге пока нет заполненных оттенков.';
+
+    const albums=catalogAlbums();
+    const validAlbumIds=new Set(albums.map(x=>String(x.id)));
+    if(state.matchFilters.albumId&&!validAlbumIds.has(String(state.matchFilters.albumId)))state.matchFilters.albumId='';
+    els.matchAlbumEnabled.checked=state.matchFilters.albumEnabled;
+    els.matchAlbumControl.hidden=!state.matchFilters.albumEnabled;
+    els.matchAlbumSelect.innerHTML='<option value="">Выберите альбом</option>'+albums.map(x=>`<option value="${x.id}" ${String(state.matchFilters.albumId)===String(x.id)?'selected':''}>${escapeHtml(x.title)}</option>`).join('');
+    els.matchAlbumHint.textContent=albums.length?'Выберите один из альбомов каталога.':'В каталоге пока нет доступных альбомов.';
   }
 
   function productPassesColor(p){
@@ -633,6 +651,18 @@
     if(!state.matchFilters.shadeEnabled)return true;
     const q=normalizeFilterText(state.matchFilters.shadeQuery);if(!q)return true;
     return normalizeFilterText(p?.shade).includes(q);
+  }
+
+  function productPassesAlbum(p){
+    if(!state.matchFilters.albumEnabled)return true;
+    const albumId=Number(state.matchFilters.albumId);if(!Number.isInteger(albumId)||albumId<=0)return true;
+    return Number(p?.albumId)===albumId;
+  }
+
+  function albumUrlForProduct(p){
+    const owner=Number(p?.ownerId);
+    const album=Number(p?.albumId);
+    return Number.isInteger(owner)&&owner!==0&&Number.isInteger(album)&&album>0?`https://vk.com/album${owner}_${album}`:'';
   }
 
   function productCard(p,match){
@@ -677,13 +707,14 @@
       ${meterageHtml}
       ${statsHtml}
       ${stockHtml}
-      ${p.photoUrl?`<button class="card-action" data-open="${encodeURIComponent(p.photoUrl)}" type="button">Открыть фото VK</button>`:''}
+      ${(p.photoUrl||albumUrlForProduct(p))?`<div class="card-actions">${p.photoUrl?`<button class="card-action" data-open="${encodeURIComponent(p.photoUrl)}" type="button">Перейти в VK</button>`:''}${albumUrlForProduct(p)?`<button class="card-action" data-open="${encodeURIComponent(albumUrlForProduct(p))}" type="button">Перейти в альбом</button>`:''}</div>`:''}
     </article>`;
   }
 
   function hasSelectedColor(){return state.matchFilters.colorEnabled&&state.matchFilters.colors.length>0;}
   function hasSelectedComposition(){return state.matchFilters.compositionEnabled&&Object.keys(state.matchFilters.materials).length>0;}
   function hasSelectedShade(){return state.matchFilters.shadeEnabled&&normalizeFilterText(state.matchFilters.shadeQuery).length>0;}
+  function hasSelectedAlbum(){return state.matchFilters.albumEnabled&&Number.isInteger(Number(state.matchFilters.albumId))&&Number(state.matchFilters.albumId)>0;}
 
   function matchContext(){
     if(state.matchMode==='product'){
@@ -696,8 +727,9 @@
     const hasColor=hasSelectedColor();
     const hasComposition=hasSelectedComposition();
     const hasShade=hasSelectedShade();
-    if(!target&&!hasColor&&!hasComposition&&!hasShade)return null;
-    return {mode:'characteristics',target,hasMeterage:!!target,hasColor,hasComposition,hasShade};
+    const hasAlbum=hasSelectedAlbum();
+    if(!target&&!hasColor&&!hasComposition&&!hasShade&&!hasAlbum)return null;
+    return {mode:'characteristics',target,hasMeterage:!!target,hasColor,hasComposition,hasShade,hasAlbum};
   }
 
   function renderMatchMode(){
@@ -751,7 +783,7 @@
       }else if(ctx){
         setMatchPrompt('Условия готовы','Нажмите «Найти», чтобы показать подходящую пряжу.');
       }else{
-        setMatchPrompt('Задайте условия поиска','Можно искать по метражу, цвету, составу, оттенку или их сочетанию. Затем нажмите «Найти».');
+        setMatchPrompt('Задайте условия поиска','Можно искать по метражу, цвету, составу, оттенку, альбому или их сочетанию. Затем нажмите «Найти».');
       }
       return;
     }
@@ -759,7 +791,7 @@
     if(!ctx){
       els.matchCount.textContent='0 вариантов';
       if(state.matchMode==='product')setMatchPrompt('Сначала рассчитайте изделие','Либо переключитесь на «По характеристикам».');
-      else setMatchPrompt('Выберите хотя бы одно условие','Укажите метраж, выберите цвет, состав, оттенок или несколько условий одновременно.');
+      else setMatchPrompt('Выберите хотя бы одно условие','Укажите метраж, выберите цвет, состав, оттенок, альбом или несколько условий одновременно.');
       return;
     }
 
@@ -774,6 +806,7 @@
       if(ctx.hasColor)bits.push('выбранный цвет');
       if(ctx.hasComposition)bits.push('выбранный состав');
       if(ctx.hasShade)bits.push(`оттенок «${state.matchFilters.shadeQuery.trim()}»`);
+      if(ctx.hasAlbum){const a=catalogAlbums().find(x=>String(x.id)===String(state.matchFilters.albumId));bits.push(`альбом «${a?.title||state.matchFilters.albumId}»`);}
       els.matchSummary.innerHTML=`<div class="mini-orb">${icon('yarn')}</div><div><h3>Подбор по характеристикам</h3><p>Учитываем: ${escapeHtml(bits.join(' · '))}.</p></div>`;
     }
 
@@ -785,7 +818,7 @@
       }else{
         b={plies:1,effective:p.meterage?Number(p.meterage.metersPer100g):null,deviation:null,absDeviation:Number.POSITIVE_INFINITY,meterageMatched:false};
       }
-      if(!productPassesColor(p)||!productPassesComposition(p)||!productPassesShade(p))return null;
+      if(!productPassesColor(p)||!productPassesComposition(p)||!productPassesShade(p)||!productPassesAlbum(p))return null;
       if(ctx.mode==='product'){
         const needRaw=ctx.requiredMeters/b.effective*100;
         const need=Math.ceil(needRaw/5)*5;
@@ -988,6 +1021,14 @@
       state.matchFilters.shadeQuery=els.matchShadeQuery.value;
       state.matchSearchRequested=false;renderMatches();
     }
+  });
+  els.matchAlbumEnabled.addEventListener('change',()=>{
+    state.matchFilters.albumEnabled=els.matchAlbumEnabled.checked;
+    state.matchSearchRequested=false;renderMatches();
+  });
+  els.matchAlbumSelect.addEventListener('change',()=>{
+    state.matchFilters.albumId=els.matchAlbumSelect.value;
+    state.matchSearchRequested=false;renderMatches();
   });
   els.matchCompositionOptions.addEventListener('change',e=>{
     const material=e.target.closest('[data-match-material]');
