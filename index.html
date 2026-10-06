@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261006-cascade-filter01">
+  <link rel="stylesheet" href="assets/styles.css?v=20261006-meterage-toggle01">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -183,16 +183,17 @@
             </div>
 
             <div class="match-criterion is-meterage">
-              <div class="match-criterion-label"><span class="criterion-number">2</span><div><strong>Метраж</strong><small>Необязательно. Если указан, учитываем допуск ±10% и сложение одной и той же пряжи в 1–6 нитей.</small></div></div>
-              <div class="match-criterion-control">
+              <div class="match-criterion-label"><span class="criterion-number">2</span><label class="match-filter-toggle"><input id="matchMeterageEnabled" type="checkbox"><span>Метраж</span></label></div>
+              <div class="match-criterion-control" id="matchMeterageControl" hidden>
                 <div class="manual-match-input" id="manualMatchInput">
                   <label class="field"><span>Нужный метраж на 100 г</span><div class="input-unit"><input id="matchManualMeterage" type="number" min="1" step="1" inputmode="decimal" placeholder="например, 500"><b>м</b></div></label>
+                  <small>Учитываем допуск ±10% и сложение одной и той же пряжи в 1–6 нитей.</small>
                 </div>
                 <div class="product-match-source" id="productMatchSource" hidden>
                   <div id="productMatchSourceText">Сначала рассчитайте изделие во второй вкладке.</div>
                   <button class="secondary-btn tiny" type="button" data-go="product">Перейти к изделию</button>
                 </div>
-                <div class="criterion-current"><strong id="matchMeterageText">Метраж не используется</strong><small id="matchMeterageHint">Оставьте поле пустым, если метраж не важен.</small></div>
+                <div class="criterion-current"><strong id="matchMeterageText">Метраж не используется</strong><small id="matchMeterageHint">Введите нужный метраж на 100 г.</small></div>
               </div>
             </div>
 
@@ -254,6 +255,6 @@
   <script src="js/data.js?v=20261003-match09"></script>
   <script src="js/parser.js?v=20261006-stock-bobbins01"></script>
   <script src="js/vk-catalog.js?v=20261005-photozoom01"></script>
-  <script src="js/app.js?v=20261006-cascade-filter01"></script>
+  <script src="js/app.js?v=20261006-meterage-toggle01"></script>
 </body>
 </html>
