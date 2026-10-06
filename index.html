@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261006-album-filter01">
+  <link rel="stylesheet" href="assets/styles.css?v=20261006-cascade-filter01">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -158,11 +158,11 @@
       </section>
 
       <section class="view" id="view-match">
-        <div class="section-head match-head"><div><span class="eyebrow">Шаг 3</span><h1>Подбор пряжи</h1><p>Подберите пряжу по метражу, цвету, составу, оттенку или сочетанию этих характеристик.</p></div><button class="ghost-btn tiny" id="refreshCatalogBtn" type="button">Обновить каталог</button></div>
+        <div class="section-head match-head"><div><span class="eyebrow">Шаг 3</span><h1>Подбор пряжи</h1><p>Подберите пряжу по альбому, метражу, цвету, составу, оттенку или сочетанию этих характеристик.</p></div><button class="ghost-btn tiny" id="refreshCatalogBtn" type="button">Обновить каталог</button></div>
         <div class="catalog-status" id="catalogStatus" aria-live="polite"><span class="status-dot"></span><span>Каталог ещё не загружен.</span></div>
 
         <section class="match-mode-card" aria-label="Режим подбора">
-          <div class="match-mode-copy"><span class="eyebrow">Режим подбора</span><h2>Можно подбирать и без расчёта изделия</h2><p>В режиме «По характеристикам» задайте любые нужные условия. Метраж не обязателен: можно искать только по цвету, составу, оттенку или сочетать параметры.</p></div>
+          <div class="match-mode-copy"><span class="eyebrow">Режим подбора</span><h2>Можно подбирать и без расчёта изделия</h2><p>В режиме «По характеристикам» задайте любые нужные условия. Метраж не обязателен: можно начать с альбома, а затем уточнить поиск по цвету, составу, оттенку или сочетать параметры.</p></div>
           <div class="match-mode-switch" role="group" aria-label="Выбор режима подбора">
             <button class="match-mode-btn is-active" id="matchModeCharacteristics" type="button" data-match-mode="characteristics">По характеристикам</button>
             <button class="match-mode-btn" id="matchModeProduct" type="button" data-match-mode="product">По расчёту изделия</button>
@@ -174,8 +174,16 @@
               <div class="match-count" id="matchCount">0 вариантов</div>
             </div>
 
+            <div class="match-criterion">
+              <div class="match-criterion-label"><span class="criterion-number">1</span><label class="match-filter-toggle"><input id="matchAlbumEnabled" type="checkbox"><span>Альбом</span></label></div>
+              <div class="match-criterion-control">
+                <div id="matchAlbumOptions" class="filter-options" hidden></div>
+                <small id="matchAlbumHint">Выберите один или несколько альбомов. Остальные варианты поиска будут показаны только для выбранных альбомов.</small>
+              </div>
+            </div>
+
             <div class="match-criterion is-meterage">
-              <div class="match-criterion-label"><span class="criterion-number">1</span><div><strong>Метраж</strong><small>Необязательно. Если указан, учитываем допуск ±10% и сложение одной и той же пряжи в 1–6 нитей.</small></div></div>
+              <div class="match-criterion-label"><span class="criterion-number">2</span><div><strong>Метраж</strong><small>Необязательно. Если указан, учитываем допуск ±10% и сложение одной и той же пряжи в 1–6 нитей.</small></div></div>
               <div class="match-criterion-control">
                 <div class="manual-match-input" id="manualMatchInput">
                   <label class="field"><span>Нужный метраж на 100 г</span><div class="input-unit"><input id="matchManualMeterage" type="number" min="1" step="1" inputmode="decimal" placeholder="например, 500"><b>м</b></div></label>
@@ -189,48 +197,38 @@
             </div>
 
             <div class="match-criterion">
-              <div class="match-criterion-label"><span class="criterion-number">2</span><label class="match-filter-toggle"><input id="matchColorEnabled" type="checkbox"><span>Цвет</span></label></div>
+              <div class="match-criterion-label"><span class="criterion-number">3</span><label class="match-filter-toggle"><input id="matchColorEnabled" type="checkbox"><span>Цвет</span></label></div>
               <div class="match-criterion-control">
                 <div id="matchColorOptions" class="filter-options" hidden></div>
-                <small id="matchColorHint">Выберите один или несколько цветов.</small>
+                <small id="matchColorHint">Показываются только цвета, доступные после предыдущих условий.</small>
               </div>
             </div>
 
             <div class="match-criterion">
-              <div class="match-criterion-label"><span class="criterion-number">3</span><label class="match-filter-toggle"><input id="matchCompositionEnabled" type="checkbox"><span>Состав</span></label></div>
+              <div class="match-criterion-label"><span class="criterion-number">4</span><label class="match-filter-toggle"><input id="matchCompositionEnabled" type="checkbox"><span>Состав</span></label></div>
               <div class="match-criterion-control">
                 <div id="matchCompositionOptions" class="composition-filter-options" hidden></div>
-                <small id="matchCompositionHint">Выберите компоненты состава. Несколько компонентов работают как «И», для каждого можно задать минимальный процент.</small>
+                <small id="matchCompositionHint">Показываются только компоненты состава, доступные после предыдущих условий. Несколько компонентов работают как «И».</small>
               </div>
             </div>
 
             <div class="match-criterion">
-              <div class="match-criterion-label"><span class="criterion-number">4</span><label class="match-filter-toggle"><input id="matchShadeEnabled" type="checkbox"><span>Оттенок</span></label></div>
+              <div class="match-criterion-label"><span class="criterion-number">5</span><label class="match-filter-toggle"><input id="matchShadeEnabled" type="checkbox"><span>Оттенок</span></label></div>
               <div class="match-criterion-control">
                 <div class="shade-search" id="matchShadeSearch" hidden>
                   <input id="matchShadeQuery" type="text" autocomplete="off" placeholder="Начните вводить оттенок…" aria-autocomplete="list" aria-controls="matchShadeSuggestions">
                   <div id="matchShadeSuggestions" class="shade-suggestions" role="listbox" hidden></div>
                 </div>
-                <small id="matchShadeHint">Введите часть оттенка. Например, «синий» найдёт все оттенки, содержащие слово «синий». Подсказки можно использовать для точного выбора.</small>
+                <small id="matchShadeHint">Подсказки оттенков строятся только по пряже, оставшейся после предыдущих условий.</small>
               </div>
             </div>
 
-            <div class="match-criterion">
-              <div class="match-criterion-label"><span class="criterion-number">5</span><label class="match-filter-toggle"><input id="matchAlbumEnabled" type="checkbox"><span>Альбом</span></label></div>
-              <div class="match-criterion-control">
-                <div class="album-filter" id="matchAlbumControl" hidden>
-                  <select id="matchAlbumSelect" aria-label="Выберите альбом"><option value="">Выберите альбом</option></select>
-                </div>
-                <small id="matchAlbumHint">Можно ограничить поиск пряжи одним альбомом.</small>
-              </div>
-            </div>
-
-            <p class="match-filter-note">Заполните хотя бы одно условие. Несколько выбранных цветов работают как «ИЛИ». Между метражом, цветом, составом, оттенком и альбомом действует логика «И».</p>
+            <p class="match-filter-note">Фильтры работают каскадно сверху вниз. Несколько альбомов и несколько цветов внутри своего критерия работают как «ИЛИ», между критериями действует логика «И».</p>
             <button class="primary-btn match-find-btn" id="runMatchSearchBtn" type="button">Найти</button>
           </div>
         </section>
 
-        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Задайте условия поиска</h3><p>Можно искать по метражу, цвету, составу, оттенку, альбому или их сочетанию. Затем нажмите «Найти».</p></div>
+        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Задайте условия поиска</h3><p>Можно начать с альбома, затем уточнить метраж, цвет, состав и оттенок. Затем нажмите «Найти».</p></div>
         <div id="matchContent" hidden>
           <div class="match-summary" id="matchSummary"></div>
           <div class="product-grid" id="matchGrid"></div>
@@ -256,6 +254,6 @@
   <script src="js/data.js?v=20261003-match09"></script>
   <script src="js/parser.js?v=20261006-stock-bobbins01"></script>
   <script src="js/vk-catalog.js?v=20261005-photozoom01"></script>
-  <script src="js/app.js?v=20261006-album-filter01"></script>
+  <script src="js/app.js?v=20261006-cascade-filter01"></script>
 </body>
 </html>
