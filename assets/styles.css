@@ -470,3 +470,10 @@ body.photo-lightbox-open{overflow:hidden}
   .composition-min{display:grid;grid-template-columns:1fr auto;align-items:center}.composition-min>span{font-size:8.5px}.percent-filter input{width:36px;font-size:10.5px}.percent-filter b{padding-right:5px;font-size:9px}
   .shade-search{max-width:none}.shade-search>input{font-size:16px}
 }
+
+/* 20261006 — shade contains-group UX */
+.shade-match-all{display:grid;width:100%;gap:3px;border:0;border-radius:9px;background:var(--accent-soft);color:var(--text);font:inherit;text-align:left;padding:9px 10px;cursor:pointer}
+.shade-match-all strong{font-size:12px;line-height:1.25}.shade-match-all span{font-size:10.5px;color:var(--muted)}
+.shade-suggestion-caption{padding:8px 9px 3px;color:var(--muted);font-size:10px;font-weight:600}
+.shade-suggestions{max-height:190px}
+@media(max-width:520px){.shade-match-all{padding:10px}.shade-match-all strong{font-size:13px}.shade-match-all span{font-size:11px}.shade-suggestions{max-height:180px}}
