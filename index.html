@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261005-nativephoto03">
+  <link rel="stylesheet" href="assets/styles.css?v=20261006-shade-grid01">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -158,11 +158,11 @@
       </section>
 
       <section class="view" id="view-match">
-        <div class="section-head match-head"><div><span class="eyebrow">Шаг 3</span><h1>Подбор пряжи</h1><p>Подберите пряжу по метражу, цвету, составу или сочетанию этих характеристик.</p></div><button class="ghost-btn tiny" id="refreshCatalogBtn" type="button">Обновить каталог</button></div>
+        <div class="section-head match-head"><div><span class="eyebrow">Шаг 3</span><h1>Подбор пряжи</h1><p>Подберите пряжу по метражу, цвету, составу, оттенку или сочетанию этих характеристик.</p></div><button class="ghost-btn tiny" id="refreshCatalogBtn" type="button">Обновить каталог</button></div>
         <div class="catalog-status" id="catalogStatus" aria-live="polite"><span class="status-dot"></span><span>Каталог ещё не загружен.</span></div>
 
         <section class="match-mode-card" aria-label="Режим подбора">
-          <div class="match-mode-copy"><span class="eyebrow">Режим подбора</span><h2>Можно подбирать и без расчёта изделия</h2><p>В режиме «По характеристикам» задайте любые нужные условия. Метраж не обязателен: можно искать только по цвету, только по составу или сочетать параметры.</p></div>
+          <div class="match-mode-copy"><span class="eyebrow">Режим подбора</span><h2>Можно подбирать и без расчёта изделия</h2><p>В режиме «По характеристикам» задайте любые нужные условия. Метраж не обязателен: можно искать только по цвету, составу, оттенку или сочетать параметры.</p></div>
           <div class="match-mode-switch" role="group" aria-label="Выбор режима подбора">
             <button class="match-mode-btn is-active" id="matchModeCharacteristics" type="button" data-match-mode="characteristics">По характеристикам</button>
             <button class="match-mode-btn" id="matchModeProduct" type="button" data-match-mode="product">По расчёту изделия</button>
@@ -204,12 +204,23 @@
               </div>
             </div>
 
-            <p class="match-filter-note">Заполните хотя бы одно условие. Несколько выбранных цветов работают как «ИЛИ». Между метражом, цветом и составом действует логика «И».</p>
+            <div class="match-criterion">
+              <div class="match-criterion-label"><span class="criterion-number">4</span><label class="match-filter-toggle"><input id="matchShadeEnabled" type="checkbox"><span>Оттенок</span></label></div>
+              <div class="match-criterion-control">
+                <div class="shade-search" id="matchShadeSearch" hidden>
+                  <input id="matchShadeQuery" type="text" autocomplete="off" placeholder="Начните вводить оттенок…" aria-autocomplete="list" aria-controls="matchShadeSuggestions">
+                  <div id="matchShadeSuggestions" class="shade-suggestions" role="listbox" hidden></div>
+                </div>
+                <small id="matchShadeHint">Введите часть названия оттенка. Подсказки формируются из оттенков, найденных в каталоге.</small>
+              </div>
+            </div>
+
+            <p class="match-filter-note">Заполните хотя бы одно условие. Несколько выбранных цветов работают как «ИЛИ». Между метражом, цветом, составом и оттенком действует логика «И».</p>
             <button class="primary-btn match-find-btn" id="runMatchSearchBtn" type="button">Найти</button>
           </div>
         </section>
 
-        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Задайте условия поиска</h3><p>Можно искать по метражу, цвету, составу или их сочетанию. Затем нажмите «Найти».</p></div>
+        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Задайте условия поиска</h3><p>Можно искать по метражу, цвету, составу, оттенку или их сочетанию. Затем нажмите «Найти».</p></div>
         <div id="matchContent" hidden>
           <div class="match-summary" id="matchSummary"></div>
           <div class="product-grid" id="matchGrid"></div>
@@ -231,10 +242,10 @@
   </div>
 
   <script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js"></script>
-  <script src="js/config.js?v=20261005-albums11"></script>
+  <script src="js/config.js?v=20261006-bobbins01"></script>
   <script src="js/data.js?v=20261003-match09"></script>
-  <script src="js/parser.js?v=20261003-match09"></script>
+  <script src="js/parser.js?v=20261006-stock-bobbins01"></script>
   <script src="js/vk-catalog.js?v=20261005-photozoom01"></script>
-  <script src="js/app.js?v=20261005-nativephoto03"></script>
+  <script src="js/app.js?v=20261006-shade-grid01"></script>
 </body>
 </html>
