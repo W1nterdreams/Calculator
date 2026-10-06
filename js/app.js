@@ -782,8 +782,7 @@
       meterageHtml=`<div class="meterage-match"><div><span>Исходный метраж</span><b>${fmt(p.meterage.metersPer100g)} м/100 г</b></div><div class="match-arrow">→</div><div><span>${escapeHtml(plyWord)}</span><b>≈ ${fmt(match.effective)} м/100 г</b><small>${escapeHtml(deviationText)}</small></div></div>`;
     }
     return `<article class="product-card">
-      <div class="product-card-top">${visual}<div><h3>${escapeHtml(productTitle(p))}</h3>${meta?`<div class="meta">${escapeHtml(meta)}</div>`:''}</div></div>
-      <div class="tag-row">${tags.slice(0,5).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+      <div class="product-card-top">${visual}<div class="product-card-info"><h3>${escapeHtml(productTitle(p))}</h3>${meta?`<div class="meta">${escapeHtml(meta)}</div>`:''}<div class="tag-row product-card-characteristics">${tags.slice(0,5).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div></div></div>
       ${meterageHtml}
       ${statsHtml}
       ${stockHtml}
