@@ -488,3 +488,7 @@ body.photo-lightbox-open{overflow:hidden}
 
 /* 20261006 — cascading album-first filters */
 .album-chip span{white-space:normal;line-height:1.25;overflow-wrap:anywhere}
+
+/* Meterage criterion follows the same collapsed-by-default pattern as other filters. */
+#matchMeterageControl[hidden]{display:none!important}
+#manualMatchInput[hidden],#productMatchSource[hidden]{display:none!important}
