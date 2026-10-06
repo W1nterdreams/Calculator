@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261006-shade-contains02">
+  <link rel="stylesheet" href="assets/styles.css?v=20261006-album-filter01">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -215,12 +215,22 @@
               </div>
             </div>
 
-            <p class="match-filter-note">Заполните хотя бы одно условие. Несколько выбранных цветов работают как «ИЛИ». Между метражом, цветом, составом и оттенком действует логика «И».</p>
+            <div class="match-criterion">
+              <div class="match-criterion-label"><span class="criterion-number">5</span><label class="match-filter-toggle"><input id="matchAlbumEnabled" type="checkbox"><span>Альбом</span></label></div>
+              <div class="match-criterion-control">
+                <div class="album-filter" id="matchAlbumControl" hidden>
+                  <select id="matchAlbumSelect" aria-label="Выберите альбом"><option value="">Выберите альбом</option></select>
+                </div>
+                <small id="matchAlbumHint">Можно ограничить поиск пряжи одним альбомом.</small>
+              </div>
+            </div>
+
+            <p class="match-filter-note">Заполните хотя бы одно условие. Несколько выбранных цветов работают как «ИЛИ». Между метражом, цветом, составом, оттенком и альбомом действует логика «И».</p>
             <button class="primary-btn match-find-btn" id="runMatchSearchBtn" type="button">Найти</button>
           </div>
         </section>
 
-        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Задайте условия поиска</h3><p>Можно искать по метражу, цвету, составу, оттенку или их сочетанию. Затем нажмите «Найти».</p></div>
+        <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Задайте условия поиска</h3><p>Можно искать по метражу, цвету, составу, оттенку, альбому или их сочетанию. Затем нажмите «Найти».</p></div>
         <div id="matchContent" hidden>
           <div class="match-summary" id="matchSummary"></div>
           <div class="product-grid" id="matchGrid"></div>
@@ -246,6 +256,6 @@
   <script src="js/data.js?v=20261003-match09"></script>
   <script src="js/parser.js?v=20261006-stock-bobbins01"></script>
   <script src="js/vk-catalog.js?v=20261005-photozoom01"></script>
-  <script src="js/app.js?v=20261006-shade-contains02"></script>
+  <script src="js/app.js?v=20261006-album-filter01"></script>
 </body>
 </html>
