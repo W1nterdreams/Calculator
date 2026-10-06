@@ -477,3 +477,11 @@ body.photo-lightbox-open{overflow:hidden}
 .shade-suggestion-caption{padding:8px 9px 3px;color:var(--muted);font-size:10px;font-weight:600}
 .shade-suggestions{max-height:190px}
 @media(max-width:520px){.shade-match-all{padding:10px}.shade-match-all strong{font-size:13px}.shade-match-all span{font-size:11px}.shade-suggestions{max-height:180px}}
+
+/* 20261006 — album filter and paired VK actions */
+.album-filter{max-width:460px}
+.album-filter select{width:100%;min-height:43px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);font:inherit;font-size:14px;padding:9px 36px 9px 12px;outline:none}
+.album-filter select:focus{border-color:#b695fb;box-shadow:0 0 0 3px rgba(123,73,228,.12)}
+.card-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.product-card .card-actions .card-action{width:100%;margin-top:0;min-width:0;padding:8px 7px;line-height:1.15}
+@media(max-width:520px){.album-filter{max-width:none}.album-filter select{font-size:16px}.card-actions{gap:7px}.product-card .card-actions .card-action{font-size:11px}}
