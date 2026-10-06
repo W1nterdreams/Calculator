@@ -536,19 +536,39 @@
   }
 
   function matchingShadeSuggestions(query){
-    const q=normalizeFilterText(query);if(!q)return catalogShades().slice(0,8);
+    const q=normalizeFilterText(query);if(!q)return catalogShades().slice(0,6);
     return catalogShades().filter(x=>x.key.includes(q)).sort((a,b)=>{
       const ap=a.key.startsWith(q)?0:1,bp=b.key.startsWith(q)?0:1;
       return ap-bp||a.label.localeCompare(b.label,'ru');
-    }).slice(0,8);
+    }).slice(0,6);
+  }
+
+  function shadeMatchStats(query){
+    const q=normalizeFilterText(query);
+    if(!q)return {shadeCount:0,productCount:0};
+    const shades=new Set();let productCount=0;
+    for(const p of state.vkCatalog){
+      const raw=String(p?.shade||'').trim();if(!raw)continue;
+      const key=normalizeFilterText(raw);if(!key.includes(q))continue;
+      shades.add(key);productCount++;
+    }
+    return {shadeCount:shades.size,productCount};
   }
 
   function renderShadeSuggestions(){
     if(!els.matchShadeSuggestions)return;
     if(!state.matchFilters.shadeEnabled){els.matchShadeSuggestions.hidden=true;els.matchShadeSuggestions.innerHTML='';return;}
-    const items=matchingShadeSuggestions(state.matchFilters.shadeQuery);
-    if(!items.length){els.matchShadeSuggestions.innerHTML='<div class="shade-suggestion-empty">Совпадений в каталоге нет</div>';els.matchShadeSuggestions.hidden=false;return;}
-    els.matchShadeSuggestions.innerHTML=items.map(x=>`<button type="button" class="shade-suggestion" data-match-shade="${encodeURIComponent(x.label)}" role="option">${escapeHtml(x.label)}</button>`).join('');
+    const rawQuery=String(state.matchFilters.shadeQuery||'').trim();
+    const items=matchingShadeSuggestions(rawQuery);
+    if(!rawQuery){
+      els.matchShadeSuggestions.innerHTML='<div class="shade-suggestion-empty">Введите часть оттенка, например «синий». Будут найдены все оттенки, содержащие это слово.</div>';
+      els.matchShadeSuggestions.hidden=false;return;
+    }
+    const stats=shadeMatchStats(rawQuery);
+    if(!stats.productCount){els.matchShadeSuggestions.innerHTML='<div class="shade-suggestion-empty">Совпадений в каталоге нет</div>';els.matchShadeSuggestions.hidden=false;return;}
+    const summary=`<button type="button" class="shade-match-all" data-match-shade-all role="option"><strong>Все оттенки с «${escapeHtml(rawQuery)}»</strong><span>${stats.shadeCount} ${stats.shadeCount===1?'вариант':'вариантов'} · ${stats.productCount} ${stats.productCount===1?'товар':'товаров'}</span></button>`;
+    const examples=items.length?`<div class="shade-suggestion-caption">Уточнить до конкретного оттенка:</div>${items.map(x=>`<button type="button" class="shade-suggestion" data-match-shade="${encodeURIComponent(x.label)}" role="option">${escapeHtml(x.label)}</button>`).join('')}`:'';
+    els.matchShadeSuggestions.innerHTML=summary+examples;
     els.matchShadeSuggestions.hidden=false;
   }
 
@@ -954,10 +974,20 @@
   });
   els.matchShadeQuery.addEventListener('focus',renderShadeSuggestions);
   els.matchShadeSuggestions.addEventListener('click',e=>{
+    const all=e.target.closest('[data-match-shade-all]');
+    if(all){els.matchShadeSuggestions.hidden=true;els.matchShadeQuery.focus();return;}
     const b=e.target.closest('[data-match-shade]');if(!b)return;
     const value=decodeURIComponent(b.dataset.matchShade||'');
     state.matchFilters.shadeQuery=value;els.matchShadeQuery.value=value;els.matchShadeSuggestions.hidden=true;
     state.matchSearchRequested=false;renderMatches();
+  });
+  els.matchShadeQuery.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      els.matchShadeSuggestions.hidden=true;
+      state.matchFilters.shadeQuery=els.matchShadeQuery.value;
+      state.matchSearchRequested=false;renderMatches();
+    }
   });
   els.matchCompositionOptions.addEventListener('change',e=>{
     const material=e.target.closest('[data-match-material]');
