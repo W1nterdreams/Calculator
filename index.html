@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261006-cardlayout01">
+  <link rel="stylesheet" href="assets/styles.css?v=20261007-multishade01">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -220,6 +220,7 @@
                   <label class="shade-show-all-toggle"><input id="matchShadeShowAll" type="checkbox"><span>Показать все оттенки</span></label>
                   <div id="matchShadeAllList" class="filter-options shade-all-options" hidden></div>
                   <button id="matchShadeMoreBtn" class="secondary-btn tiny shade-more-btn" type="button" hidden>Показать ещё</button>
+                  <div id="matchShadeSelected" class="shade-selected" hidden></div>
                   <div class="shade-search">
                     <input id="matchShadeQuery" type="text" autocomplete="off" placeholder="Начните вводить оттенок…" aria-autocomplete="list" aria-controls="matchShadeSuggestions">
                     <div id="matchShadeSuggestions" class="shade-suggestions" role="listbox" hidden></div>
@@ -229,7 +230,7 @@
               </div>
             </div>
 
-            <p class="match-filter-note">Фильтры работают каскадно сверху вниз. Несколько альбомов и несколько цветов внутри своего критерия работают как «ИЛИ», между критериями действует логика «И».</p>
+            <p class="match-filter-note">Фильтры работают каскадно сверху вниз. Несколько альбомов, цветов и оттенков внутри своего критерия работают как «ИЛИ», между критериями действует логика «И».</p>
             <button class="primary-btn match-find-btn" id="runMatchSearchBtn" type="button">Найти</button>
           </div>
         </section>
@@ -260,6 +261,6 @@
   <script src="js/data.js?v=20261003-match09"></script>
   <script src="js/parser.js?v=20261006-keycap-stock01"></script>
   <script src="js/vk-catalog.js?v=20261005-photozoom01"></script>
-  <script src="js/app.js?v=20261006-comment01"></script>
+  <script src="js/app.js?v=20261007-multishade01"></script>
 </body>
 </html>
