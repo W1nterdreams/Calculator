@@ -33,7 +33,7 @@
     matchSearchRequested:false,
     matchShadeShowAll:false,
     matchShadeVisibleCount:30,
-    matchFilters:{albumEnabled:false,albumIds:[],meterageEnabled:false,colorEnabled:false,colors:[],compositionEnabled:false,materials:{},shadeEnabled:false,shadeQuery:''}
+    matchFilters:{albumEnabled:false,albumIds:[],meterageEnabled:false,colorEnabled:false,colors:[],compositionEnabled:false,materials:{},shadeEnabled:false,shadeQueries:[],shadeQuery:''}
   };
 
   const els={
@@ -42,7 +42,7 @@
     sampleStitches:$('#sampleStitches'),sampleRows:$('#sampleRows'),sampleWidth:$('#sampleWidth'),sampleHeight:$('#sampleHeight'),sampleWeight:$('#sampleWeight'),sampleValidation:$('#sampleValidation'),sampleResultCard:$('#sampleResultCard'),sampleGaugeResult:$('#sampleGaugeResult'),sampleRowsGaugeResult:$('#sampleRowsGaugeResult'),areaConsumptionResult:$('#areaConsumptionResult'),areaConsumptionHint:$('#areaConsumptionHint'),sampleMeterageResult:$('#sampleMeterageResult'),sampleMetersUsedResult:$('#sampleMetersUsedResult'),useSampleBtn:$('#useSampleBtn'),
     sampleTransferStatus:$('#sampleTransferStatus'),pullSampleBtn:$('#pullSampleBtn'),garmentGrid:$('#garmentGrid'),sizeChips:$('#sizeChips'),sizeHint:$('#sizeHint'),productDimensionsCard:$('#productDimensionsCard'),productDimensionsFields:$('#productDimensionsFields'),productDimensionsHint:$('#productDimensionsHint'),productDimensionSummary:$('#productDimensionSummary'),productGauge:$('#productGauge'),productRowGauge:$('#productRowGauge'),productMeterage:$('#productMeterage'),gaugeHint:$('#gaugeHint'),productValidation:$('#productValidation'),productResultCard:$('#productResultCard'),productResultTitle:$('#productResultTitle'),productResultGrams:$('#productResultGrams'),productResultMeters:$('#productResultMeters'),productResultMeterage:$('#productResultMeterage'),productResultRawGrams:$('#productResultRawGrams'),productResultReserve:$('#productResultReserve'),productResultNote:$('#productResultNote'),compatBadge:$('#compatBadge'),
     refreshCatalogBtn:$('#refreshCatalogBtn'),catalogStatus:$('#catalogStatus'),matchEmpty:$('#matchEmpty'),matchContent:$('#matchContent'),matchSummary:$('#matchSummary'),matchGrid:$('#matchGrid'),
-    matchCount:$('#matchCount'),matchMeterageEnabled:$('#matchMeterageEnabled'),matchMeterageControl:$('#matchMeterageControl'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),matchShadeEnabled:$('#matchShadeEnabled'),matchShadeSearch:$('#matchShadeSearch'),matchShadeQuery:$('#matchShadeQuery'),matchShadeSuggestions:$('#matchShadeSuggestions'),matchShadeShowAll:$('#matchShadeShowAll'),matchShadeAllList:$('#matchShadeAllList'),matchShadeMoreBtn:$('#matchShadeMoreBtn'),matchShadeHint:$('#matchShadeHint'),matchAlbumEnabled:$('#matchAlbumEnabled'),matchAlbumOptions:$('#matchAlbumOptions'),matchAlbumHint:$('#matchAlbumHint'),
+    matchCount:$('#matchCount'),matchMeterageEnabled:$('#matchMeterageEnabled'),matchMeterageControl:$('#matchMeterageControl'),matchMeterageText:$('#matchMeterageText'),matchMeterageHint:$('#matchMeterageHint'),matchColorEnabled:$('#matchColorEnabled'),matchColorOptions:$('#matchColorOptions'),matchColorHint:$('#matchColorHint'),matchCompositionEnabled:$('#matchCompositionEnabled'),matchCompositionOptions:$('#matchCompositionOptions'),matchCompositionHint:$('#matchCompositionHint'),matchShadeEnabled:$('#matchShadeEnabled'),matchShadeSearch:$('#matchShadeSearch'),matchShadeSelected:$('#matchShadeSelected'),matchShadeQuery:$('#matchShadeQuery'),matchShadeSuggestions:$('#matchShadeSuggestions'),matchShadeShowAll:$('#matchShadeShowAll'),matchShadeAllList:$('#matchShadeAllList'),matchShadeMoreBtn:$('#matchShadeMoreBtn'),matchShadeHint:$('#matchShadeHint'),matchAlbumEnabled:$('#matchAlbumEnabled'),matchAlbumOptions:$('#matchAlbumOptions'),matchAlbumHint:$('#matchAlbumHint'),
     matchModeCharacteristics:$('#matchModeCharacteristics'),matchModeProduct:$('#matchModeProduct'),manualMatchInput:$('#manualMatchInput'),matchManualMeterage:$('#matchManualMeterage'),productMatchSource:$('#productMatchSource'),productMatchSourceText:$('#productMatchSourceText'),runMatchSearchBtn:$('#runMatchSearchBtn'),
     photoLightbox:$('#photoLightbox'),photoLightboxImage:$('#photoLightboxImage'),photoLightboxTitle:$('#photoLightboxTitle'),photoLightboxClose:$('#photoLightboxClose')
   };
@@ -544,12 +544,58 @@
       const title=String(p?.albumTitle||`Альбом ${id}`).trim()||`Альбом ${id}`;
       if(!map.has(id))map.set(id,title);
     }
-    return [...map.entries()].map(([id,title])=>({id,title})).sort((a,b)=>a.title.localeCompare(b.title,'ru'));
+    const configured=Array.isArray(window.MANIA_CONFIG?.ALBUM_IDS)?window.MANIA_CONFIG.ALBUM_IDS.map(Number):[];
+    const order=new Map(configured.map((id,index)=>[id,index]));
+    return [...map.entries()].map(([id,title])=>({id,title})).sort((a,b)=>{
+      const ai=order.has(a.id)?order.get(a.id):Number.MAX_SAFE_INTEGER;
+      const bi=order.has(b.id)?order.get(b.id):Number.MAX_SAFE_INTEGER;
+      return ai-bi||a.title.localeCompare(b.title,'ru');
+    });
   }
 
   function selectedAlbumIds(){
     const raw=Array.isArray(state.matchFilters.albumIds)?state.matchFilters.albumIds:[];
     return raw.map(x=>String(x)).filter(Boolean);
+  }
+
+  function selectedShadeQueries(){
+    const raw=Array.isArray(state.matchFilters.shadeQueries)?state.matchFilters.shadeQueries:[];
+    const out=[];const seen=new Set();
+    for(const value of raw){
+      const label=String(value||'').trim();const key=normalizeFilterText(label);
+      if(!key||seen.has(key))continue;seen.add(key);out.push(label);
+    }
+    return out;
+  }
+
+  function activeShadeQueries(){
+    const out=selectedShadeQueries();
+    const draft=String(state.matchFilters.shadeQuery||'').trim();
+    const draftKey=normalizeFilterText(draft);
+    if(draftKey&&!out.some(x=>normalizeFilterText(x)===draftKey))out.push(draft);
+    return out;
+  }
+
+  function addShadeQuery(value){
+    const label=String(value||'').trim();const key=normalizeFilterText(label);if(!key)return false;
+    const items=selectedShadeQueries();
+    if(!items.some(x=>normalizeFilterText(x)===key))items.push(label);
+    state.matchFilters.shadeQueries=items;
+    state.matchFilters.shadeQuery='';
+    if(els.matchShadeQuery)els.matchShadeQuery.value='';
+    return true;
+  }
+
+  function removeShadeQuery(value){
+    const key=normalizeFilterText(value);
+    state.matchFilters.shadeQueries=selectedShadeQueries().filter(x=>normalizeFilterText(x)!==key);
+  }
+
+  function renderSelectedShades(){
+    if(!els.matchShadeSelected)return;
+    const items=selectedShadeQueries();
+    els.matchShadeSelected.hidden=!items.length;
+    els.matchShadeSelected.innerHTML=items.map(x=>`<button type="button" class="selected-shade-chip" data-remove-shade="${encodeURIComponent(x)}"><span>${escapeHtml(x)}</span><b aria-hidden="true">×</b></button>`).join('');
   }
 
   function currentFacetTarget(){
@@ -613,9 +659,9 @@
     const shades=catalogShades(facetProducts('shade'));
     const limit=Math.max(30,Number(state.matchShadeVisibleCount)||30);
     const shown=shades.slice(0,limit);
-    const current=normalizeFilterText(state.matchFilters.shadeQuery);
+    const selectedKeys=new Set(selectedShadeQueries().map(normalizeFilterText));
     els.matchShadeAllList.innerHTML=shown.length
-      ?shown.map(x=>`<button type="button" class="filter-chip shade-all-chip${current===x.key?' is-selected':''}" data-match-shade-list="${encodeURIComponent(x.label)}"><span>${escapeHtml(x.label)}</span></button>`).join('')
+      ?shown.map(x=>`<button type="button" class="filter-chip shade-all-chip${selectedKeys.has(x.key)?' is-selected':''}" data-match-shade-list="${encodeURIComponent(x.label)}"><span>${escapeHtml(x.label)}</span></button>`).join('')
       :'<div class="filter-empty">После предыдущих условий заполненных оттенков не осталось.</div>';
     els.matchShadeAllList.hidden=false;
     els.matchShadeMoreBtn.hidden=shown.length>=shades.length;
@@ -696,6 +742,7 @@
     els.matchShadeSearch.hidden=!state.matchFilters.shadeEnabled;
     if(els.matchShadeShowAll)els.matchShadeShowAll.checked=state.matchShadeShowAll;
     if(els.matchShadeQuery.value!==state.matchFilters.shadeQuery)els.matchShadeQuery.value=state.matchFilters.shadeQuery;
+    renderSelectedShades();
     if(state.matchShadeShowAll&&state.matchFilters.shadeEnabled){
       const shown=Math.min(Math.max(30,Number(state.matchShadeVisibleCount)||30),shades.length);
       els.matchShadeHint.textContent=shades.length
@@ -729,8 +776,9 @@
 
   function productPassesShade(p){
     if(!state.matchFilters.shadeEnabled)return true;
-    const q=normalizeFilterText(state.matchFilters.shadeQuery);if(!q)return true;
-    return normalizeFilterText(p?.shade).includes(q);
+    const queries=activeShadeQueries().map(normalizeFilterText).filter(Boolean);if(!queries.length)return true;
+    const shade=normalizeFilterText(p?.shade);
+    return queries.some(q=>shade.includes(q));
   }
 
   function productPassesAlbum(p){
@@ -792,7 +840,7 @@
 
   function hasSelectedColor(){return state.matchFilters.colorEnabled&&state.matchFilters.colors.length>0;}
   function hasSelectedComposition(){return state.matchFilters.compositionEnabled&&Object.keys(state.matchFilters.materials).length>0;}
-  function hasSelectedShade(){return state.matchFilters.shadeEnabled&&normalizeFilterText(state.matchFilters.shadeQuery).length>0;}
+  function hasSelectedShade(){return state.matchFilters.shadeEnabled&&activeShadeQueries().length>0;}
   function hasSelectedAlbum(){return state.matchFilters.albumEnabled&&selectedAlbumIds().length>0;}
 
   function matchContext(){
@@ -887,7 +935,7 @@
       if(ctx.target)bits.push(`метраж ${fmt(ctx.target)} м/100 г`);
       if(ctx.hasColor)bits.push('выбранный цвет');
       if(ctx.hasComposition)bits.push('выбранный состав');
-      if(ctx.hasShade)bits.push(`оттенок «${state.matchFilters.shadeQuery.trim()}»`);
+      if(ctx.hasShade){const shades=activeShadeQueries();bits.push(shades.length===1?`оттенок «${shades[0]}»`:`оттенки: ${shades.map(x=>`«${x}»`).join(', ')}`);}
       if(ctx.hasAlbum){
         const byId=new Map(catalogAlbums().map(x=>[String(x.id),x.title]));
         const names=selectedAlbumIds().map(id=>byId.get(id)||`Альбом ${id}`);
@@ -1063,13 +1111,18 @@
   els.matchModeCharacteristics.addEventListener('click',()=>{state.matchMode='characteristics';renderAfterCascadeChange();});
   els.matchModeProduct.addEventListener('click',()=>{state.matchMode='product';renderAfterCascadeChange();});
   function clearUnavailableShadeAfterCascade(){
-    const q=normalizeFilterText(state.matchFilters.shadeQuery);
-    if(!state.matchFilters.shadeEnabled||!q)return false;
-    if(shadeMatchStats(q).productCount>0)return false;
-    state.matchFilters.shadeQuery='';
-    if(els.matchShadeQuery)els.matchShadeQuery.value='';
-    if(els.matchShadeSuggestions)els.matchShadeSuggestions.hidden=true;
-    return true;
+    if(!state.matchFilters.shadeEnabled)return false;
+    let changed=false;
+    const kept=selectedShadeQueries().filter(q=>shadeMatchStats(q).productCount>0);
+    if(kept.length!==selectedShadeQueries().length){state.matchFilters.shadeQueries=kept;changed=true;}
+    const draft=String(state.matchFilters.shadeQuery||'').trim();
+    if(draft&&shadeMatchStats(draft).productCount===0){
+      state.matchFilters.shadeQuery='';
+      if(els.matchShadeQuery)els.matchShadeQuery.value='';
+      changed=true;
+    }
+    if(changed&&els.matchShadeSuggestions)els.matchShadeSuggestions.hidden=true;
+    return changed;
   }
 
   function renderAfterCascadeChange(){
@@ -1122,8 +1175,14 @@
   els.matchShadeAllList?.addEventListener('click',e=>{
     const b=e.target.closest('[data-match-shade-list]');if(!b)return;
     const value=decodeURIComponent(b.dataset.matchShadeList||'');
-    state.matchFilters.shadeQuery=value;els.matchShadeQuery.value=value;
+    const key=normalizeFilterText(value);
+    if(selectedShadeQueries().some(x=>normalizeFilterText(x)===key))removeShadeQuery(value);else addShadeQuery(value);
     if(els.matchShadeSuggestions)els.matchShadeSuggestions.hidden=true;
+    state.matchSearchRequested=false;renderMatches();
+  });
+  els.matchShadeSelected?.addEventListener('click',e=>{
+    const b=e.target.closest('[data-remove-shade]');if(!b)return;
+    removeShadeQuery(decodeURIComponent(b.dataset.removeShade||''));
     state.matchSearchRequested=false;renderMatches();
   });
   els.matchShadeQuery.addEventListener('input',()=>{
@@ -1135,17 +1194,24 @@
   els.matchShadeQuery.addEventListener('focus',renderShadeSuggestions);
   els.matchShadeSuggestions.addEventListener('click',e=>{
     const all=e.target.closest('[data-match-shade-all]');
-    if(all){els.matchShadeSuggestions.hidden=true;els.matchShadeQuery.focus();return;}
+    if(all){
+      addShadeQuery(state.matchFilters.shadeQuery);
+      els.matchShadeSuggestions.hidden=true;
+      state.matchSearchRequested=false;renderMatches();
+      requestAnimationFrame(()=>els.matchShadeQuery.focus());
+      return;
+    }
     const b=e.target.closest('[data-match-shade]');if(!b)return;
     const value=decodeURIComponent(b.dataset.matchShade||'');
-    state.matchFilters.shadeQuery=value;els.matchShadeQuery.value=value;els.matchShadeSuggestions.hidden=true;
+    addShadeQuery(value);els.matchShadeSuggestions.hidden=true;
     state.matchSearchRequested=false;renderMatches();
+    requestAnimationFrame(()=>els.matchShadeQuery.focus());
   });
   els.matchShadeQuery.addEventListener('keydown',e=>{
     if(e.key==='Enter'){
       e.preventDefault();
+      addShadeQuery(els.matchShadeQuery.value);
       els.matchShadeSuggestions.hidden=true;
-      state.matchFilters.shadeQuery=els.matchShadeQuery.value;
       state.matchSearchRequested=false;renderMatches();
     }
   });
