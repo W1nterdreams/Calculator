@@ -8,7 +8,7 @@
   <title>Калькулятор пряжи — Мания пряжи</title>
   <link rel="icon" href="assets/calculator-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/calculator-icon.png">
-  <link rel="stylesheet" href="assets/styles.css?v=20261007-multishade01">
+  <link rel="stylesheet" href="assets/styles.css?v=20261011-sort01">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" width="0" height="0">
@@ -238,6 +238,22 @@
         <div class="empty-state" id="matchEmpty"><svg><use href="#i-yarn"></use></svg><h3>Задайте условия поиска</h3><p>Можно начать с альбома, затем уточнить метраж, цвет, состав и оттенок. Затем нажмите «Найти».</p></div>
         <div id="matchContent" hidden>
           <div class="match-summary" id="matchSummary"></div>
+          <div class="match-results-toolbar">
+            <label class="match-sort-field" for="matchSort">
+              <span>Сортировка</span>
+              <select id="matchSort">
+                <option value="relevance">По соответствию</option>
+                <option value="newest">Сначала новые</option>
+                <option value="oldest">Сначала старые</option>
+                <option value="title-asc">Название: А–Я</option>
+                <option value="title-desc">Название: Я–А</option>
+                <option value="meterage-asc">Метраж: меньше → больше</option>
+                <option value="meterage-desc">Метраж: больше → меньше</option>
+                <option value="stock-desc">Наличие: больше сначала</option>
+                <option value="price-asc">Цена: дешевле сначала</option>
+              </select>
+            </label>
+          </div>
           <div class="product-grid" id="matchGrid"></div>
         </div>
       </section>
@@ -261,6 +277,6 @@
   <script src="js/data.js?v=20261003-match09"></script>
   <script src="js/parser.js?v=20261006-keycap-stock01"></script>
   <script src="js/vk-catalog.js?v=20261005-photozoom01"></script>
-  <script src="js/app.js?v=20261007-multishade01"></script>
+  <script src="js/app.js?v=20261011-sort01"></script>
 </body>
 </html>
