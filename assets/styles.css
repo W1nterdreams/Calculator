@@ -528,3 +528,10 @@ body.photo-lightbox-open{overflow:hidden}
 .selected-shade-chip{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:6px 9px 6px 10px;border:1px solid #cdb5f8;border-radius:10px;background:var(--accent-soft);color:var(--accent-deep);font:inherit;font-size:11.5px;font-weight:800;cursor:pointer}
 .selected-shade-chip b{font-size:16px;line-height:1;font-weight:700}
 .selected-shade-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Result sorting */
+.match-results-toolbar{display:flex;justify-content:flex-end;align-items:center;margin-top:10px}
+.match-sort-field{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:12px;font-weight:700}
+.match-sort-field select{min-width:210px;min-height:40px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);padding:8px 34px 8px 11px;font:inherit;font-size:13px;outline:none}
+.match-sort-field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+@media(max-width:520px){.match-results-toolbar{justify-content:stretch}.match-sort-field{width:100%;justify-content:space-between}.match-sort-field select{min-width:0;flex:1;max-width:72%}}
