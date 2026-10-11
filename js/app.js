@@ -888,50 +888,61 @@
   function sortMatchRows(rows,ctx){
     const mode=String(state.matchSort||'relevance');
     const titleCmp=(a,b)=>productTitle(a.p).localeCompare(productTitle(b.p),'ru',{sensitivity:'base'});
-    const finiteValue=(value,missing)=>Number.isFinite(Number(value))?Number(value):missing;
-    const meterageValue=row=>finiteValue(row.p?.meterage?.metersPer100g,Number.POSITIVE_INFINITY);
-    const stockValue=row=>finiteValue(row.p?.stockGrams,Number.NEGATIVE_INFINITY);
-    const priceValue=row=>finiteValue(row.p?.pricePer100g,Number.POSITIVE_INFINITY);
-    const dateValue=row=>finiteValue(row.p?.date,0);
+    const finiteNumber=value=>{
+      const n=Number(value);
+      return Number.isFinite(n)?n:null;
+    };
+    const meterageValue=row=>finiteNumber(row.p?.meterage?.metersPer100g);
+    const stockValue=row=>finiteNumber(row.p?.stockGrams);
+    const priceValue=row=>finiteNumber(row.p?.pricePer100g);
+
+    // Ошибочные/сомнительные значения специально держим на границе списка.
+    // При сортировке по возрастанию они идут первыми, по убыванию — последними.
+    // Для наличия вес < 10 г считаем подозрительным: это ловит типичные ошибки
+    // разбора маркировки бобин вроде «2️⃣1190 г» -> 2 г, не затрагивая обычные веса.
+    const numericIssue=(value,kind)=>{
+      if(value==null||!Number.isFinite(value)||value<=0)return true;
+      if(kind==='stock'&&value<10)return true;
+      return false;
+    };
+    const compareNumericBoundary=(a,b,getValue,direction,kind)=>{
+      const av=getValue(a),bv=getValue(b);
+      const ai=numericIssue(av,kind),bi=numericIssue(bv,kind);
+      if(ai!==bi){
+        const issuesFirst=direction==='asc';
+        return ai==issuesFirst?-1:1;
+      }
+      if(ai&&bi)return titleCmp(a,b);
+      const d=direction==='asc'?av-bv:bv-av;
+      return Math.abs(d)>1e-9?d:titleCmp(a,b);
+    };
+    const compareMeterage=(a,b,direction)=>{
+      const av=meterageValue(a),bv=meterageValue(b);
+      const ai=av==null||av<=0,bi=bv==null||bv<=0;
+      // Для метража сохраняем прежнее поведение: неизвестные значения внизу.
+      if(ai!==bi)return ai?1:-1;
+      if(ai&&bi)return titleCmp(a,b);
+      const d=direction==='asc'?av-bv:bv-av;
+      return Math.abs(d)>1e-9?d:titleCmp(a,b);
+    };
 
     return rows.sort((a,b)=>{
+      if(mode==='price-asc')return compareNumericBoundary(a,b,priceValue,'asc','price');
+      if(mode==='price-desc')return compareNumericBoundary(a,b,priceValue,'desc','price');
+      if(mode==='stock-asc')return compareNumericBoundary(a,b,stockValue,'asc','stock');
+      if(mode==='stock-desc')return compareNumericBoundary(a,b,stockValue,'desc','stock');
+      if(mode==='meterage-asc')return compareMeterage(a,b,'asc');
+      if(mode==='meterage-desc')return compareMeterage(a,b,'desc');
+
       let d=0;
-      if(mode==='newest')d=dateValue(b)-dateValue(a);
-      else if(mode==='oldest')d=dateValue(a)-dateValue(b);
-      else if(mode==='title-asc')d=titleCmp(a,b);
-      else if(mode==='title-desc')d=titleCmp(b,a);
-      else if(mode==='meterage-asc'){
-        const av=meterageValue(a),bv=meterageValue(b);
-        if(av===Number.POSITIVE_INFINITY&&bv!==Number.POSITIVE_INFINITY)d=1;
-        else if(bv===Number.POSITIVE_INFINITY&&av!==Number.POSITIVE_INFINITY)d=-1;
-        else d=av-bv;
-      }else if(mode==='meterage-desc'){
-        const av=finiteValue(a.p?.meterage?.metersPer100g,Number.NEGATIVE_INFINITY),bv=finiteValue(b.p?.meterage?.metersPer100g,Number.NEGATIVE_INFINITY);
-        if(av===Number.NEGATIVE_INFINITY&&bv!==Number.NEGATIVE_INFINITY)d=1;
-        else if(bv===Number.NEGATIVE_INFINITY&&av!==Number.NEGATIVE_INFINITY)d=-1;
-        else d=bv-av;
-      }else if(mode==='stock-desc'){
-        const av=stockValue(a),bv=stockValue(b);
-        if(av===Number.NEGATIVE_INFINITY&&bv!==Number.NEGATIVE_INFINITY)d=1;
-        else if(bv===Number.NEGATIVE_INFINITY&&av!==Number.NEGATIVE_INFINITY)d=-1;
-        else d=bv-av;
-      }else if(mode==='price-asc'){
-        const av=priceValue(a),bv=priceValue(b);
-        if(av===Number.POSITIVE_INFINITY&&bv!==Number.POSITIVE_INFINITY)d=1;
-        else if(bv===Number.POSITIVE_INFINITY&&av!==Number.POSITIVE_INFINITY)d=-1;
-        else d=av-bv;
-      }else{
-        if(ctx.hasMeterage){
-          d=a.b.absDeviation-b.b.absDeviation;
-          if(Math.abs(d)>1e-9)return d;
-        }
-        if(ctx.mode==='product'&&a.b.stockEnough!==b.b.stockEnough){
-          if(a.b.stockEnough===true)return -1;
-          if(b.b.stockEnough===true)return 1;
-        }
-        d=titleCmp(a,b);
+      if(ctx.hasMeterage){
+        d=a.b.absDeviation-b.b.absDeviation;
+        if(Math.abs(d)>1e-9)return d;
       }
-      if(Math.abs(d)>1e-9)return d;
+      if(ctx.mode==='product'&&a.b.stockEnough!==b.b.stockEnough){
+        if(a.b.stockEnough===true)return -1;
+        if(b.b.stockEnough===true)return 1;
+      }
       return titleCmp(a,b);
     });
   }
